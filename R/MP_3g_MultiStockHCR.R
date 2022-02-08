@@ -157,13 +157,13 @@ MultiStockHCR <- function(stocks, indices, advice, advice.ctrl, year, stknm,...)
           
           # Calculate Fsq
           if(fbar.nyears == 1 | f.rescale) {
-            Fsq <- mean(fbar(stki)[,(year-1)]) 
+            Fsq[st,i] <- mean(fbar(stki)[,(year-1)]) 
           } else {
-            Fsq <- mean(fbar(stki)[,(year-fbar.nyears):(year-1)])
+            Fsq[st,i] <- mean(fbar(stki)[,(year-fbar.nyears):(year-1)])
           }
           
           fwd.ctrl <- FLash::fwdControl(data.frame(year     = c(0, 1),  
-                                                   val      = c(Fsq, 
+                                                   val      = c(Fsq[st,i], 
                                                                 Ftgi[i]), 
                                                    quantity = c( 'f', 'f'), 
                                                    rel.year = c(NA,NA))) 
@@ -324,7 +324,11 @@ MultiStockHCR <- function(stocks, indices, advice, advice.ctrl, year, stknm,...)
       maxfbar <- stocks[[st]]@range['maxfbar']
       
       ## Calculate Fstatusquo as an average of last 3 data years
-      Fsq[st,] <- yearMeans(fbar(stocks[[st]])[,(year-3):(year-1)])
+      ## if this has not been calculated in a previous step
+      if(sum(is.na(Fsq[st,])) > 0) {
+        Fsq[st,] <- yearMeans(fbar(stocks[[st]])[,(year-3):(year-1)])
+      }
+
       
       ## extract upper and lower limit reference points for F
       Fupp[st,] <- ref.pts_st['Fupp',]
