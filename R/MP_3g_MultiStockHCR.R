@@ -164,7 +164,7 @@ MultiStockHCR <- function(stocks, indices, advice, advice.ctrl, year, stknm,...)
           
           fwd.ctrl <- FLash::fwdControl(data.frame(year     = c(0, 1),  
                                                    val      = c(Fsq, 
-                                                                Ftg[,i]), 
+                                                                Ftg[i]), 
                                                    quantity = c( 'f', 'f'), 
                                                    rel.year = c(NA,NA))) 
         } else {
@@ -173,7 +173,7 @@ MultiStockHCR <- function(stocks, indices, advice, advice.ctrl, year, stknm,...)
                                                    val      = c(advice$TAC[st,
                                                                            year, 
                                                                            drop=TRUE][i], 
-                                                                Ftg[,i]), 
+                                                                Ftg[i]), 
                                                    quantity = c( 'catch', 'f')))
         }
         
