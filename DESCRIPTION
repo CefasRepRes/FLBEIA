@@ -18,23 +18,24 @@ Depends:
   FLCore (>= 2.6.5),
   FLFleet
 Imports:
-  stats,
-  utils,
-  FLXSA,
-  FLa4a,
-  Matrix,
-  FLash,
-  mvtnorm,
-  mlogit,
-  nloptr,
-  triangle,
-  arrayhelpers,
-  dplyr,
-  plyr,
-  purrr,
-  tidyr,
-  tidyverse,
-  tibble
+    stats,
+    utils,
+    FLXSA,
+    FLa4a,
+    Matrix,
+    FLash,
+    mvtnorm,
+    mlogit,
+    nloptr,
+    triangle,
+    arrayhelpers,
+    dplyr,
+    plyr,
+    purrr,
+    tidyr,
+    tidyverse,
+    tibble,
+    Rcpp
 Suggests: R.rsp, spict, XLConnect
 Additional_repositories: http://flr-project.org/R
 License: GPL (>= 2)
@@ -146,3 +147,5 @@ Collate:
     "brps_seasonal.R"
 VignetteBuilder: R.rsp
 RoxygenNote: 7.1.1
+LinkingTo: 
+    Rcpp
