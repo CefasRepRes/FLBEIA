@@ -348,24 +348,4 @@ ASPG_Baranov <- function(biols, SRs, fleets, year, season, stknm, ...){
   
 } 
 
-#---------------------------------#
-## Mizer growth 
-## In Mizer the outputs are numbers
-## at age at end of the year.
-## So here we need just to carry them
-## forward a year and the transition 
-## is already taken care of in the covars.om
-#---------------------------------#
 
-MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
-
-ni <- dim(biols[[1]]@n[6] ## number iterations
-
- for(i in 1:ni) {
-
-	 
-
- }
-
-
-}

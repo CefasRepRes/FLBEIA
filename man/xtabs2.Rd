@@ -38,10 +38,10 @@ xtabs2(
     are no higher-order sparse array classes yet).
   }
 
-\item{na.action}{a function which indicates what should happen when
+\item{na.action}{a \code{\link{function}} which indicates what should happen when
     the data contain \code{\link{NA}}s.  If unspecified, and
     \code{addNA} is true, this is set to \code{\link[stats]{na.pass}}.  When it
-    is \code{na.pass} and \code{formula} has a left hand side (with
+    is \code{\link[stats]{na.omit}} and \code{formula} has a left hand side (with
     counts), \code{\link{sum}(*, na.rm = TRUE)} is used instead of
     \code{sum(*)} for the counts.}
 

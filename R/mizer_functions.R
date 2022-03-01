@@ -1377,3 +1377,58 @@ runMizer <- function(biols, fleets, covars, year) {
 #######################
 
 
+#---------------------------------#
+## Mizer growth 
+## In Mizer the outputs are numbers
+## at age at end of the year.
+## So here we need just to carry them
+## forward a year and the transition 
+## is already taken care of in the covars.om
+#---------------------------------#
+
+MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
+  
+  yr <- year
+  
+  ni <- dim(biols[[1]]@n)[6] ## number iterations
+            
+            for(i in 1:ni) {
+              
+              for(st in names(biols)) {
+                
+                ## Update numbers following Fs and Ms in mizer
+                #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
+                #  (1-exp(-(covars$mizer_fits[[i]]$age_stuff$Fs[yr,st,] + 
+                #          covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,])))
+                # case of first year
+                if(length(dim(covars$mizer_fits[[1]]$age_stuff$num_at_age))==3) {
+                biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
+                ## weights, Ms and maturity
+                biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
+                biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,]
+                biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[yr,st,] } else {
+			
+                # case of subsequent years``:w
+
+                biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
+                ## weights, Ms and maturity
+                biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
+                biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[st,]
+                biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[st,]   
+                  
+                }
+                
+                ## Can't have zeros in numbers so add a small value
+                biols[[st]]@n[,yr,,,,i][is.na(biols[[st]]@n[,yr,,,,i])]   <- 10 ## 10,000 fish
+                biols[[st]]@n[,yr,,,,i][biols[[st]]@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
+                biols[[st]]@wt[,yr,,,,i][is.na(biols[[st]]@wt[,yr,,,,i])] <- 0
+                biols[[st]]@m[,yr,,,,i][is.na(biols[[st]]@m[,yr,,,,i])]   <- 0
+                
+              }
+              
+            }
+  
+  return(list(biols = biols))
+            
+}
+
