@@ -35,6 +35,7 @@ Imports:
     tidyr,
     tidyverse,
     tibble,
+    mizer,
     Rcpp
 Suggests: R.rsp, spict, XLConnect
 Additional_repositories: http://flr-project.org/R
@@ -86,11 +87,13 @@ Collate:
     "Conditioning_InitialPop.R"
     "data.R"
     "ecoSum_DAMARA_function.R"
+    "FLBEIA-package.R"
     "Functions_Checks.R"
     "Functions_FLFleet.R"
     "Functions_FLFleets.R"
     "MAIN_Function.R"
     "Method_propagate_FLFleet.R"
+    "mizer_functions.R"
     "MP_1_Observation.R"
     "MP_1a_Observation_Model.R"
     "MP_1b_Observation_Model_Functions.R"

@@ -3,8 +3,8 @@
 ############
 
 project_dyn <- function (object, effort, t_max = 100, dt = 0.1, t_save = 1, 
-          t_start = 0, initial_n, initial_n_pp, append = TRUE, progress_bar = TRUE, inter_mat,kappa_dyn,
-          ...) 
+                         t_start = 0, initial_n, initial_n_pp, append = TRUE, progress_bar = TRUE, inter_mat,kappa_dyn,
+                         ...) 
 {
   validObject(object)
   if (is(object, "MizerSim")) {
@@ -100,7 +100,7 @@ project_dyn <- function (object, effort, t_max = 100, dt = 0.1, t_save = 1,
     stop("t_save must be a positive multiple of dt")
   skip <- round(t_save/dt)
   t_dimnames <- seq(t_start, t_end, by = t_save)
- # browser()
+  # browser()
   sim <- MizerSim(params, t_dimnames = t_dimnames)
   resource_dynamics_fn <- get(params@resource_dynamics)
   other_dynamics_fns <- lapply(params@other_dynamics, get)
@@ -169,7 +169,7 @@ project_dyn <- function (object, effort, t_max = 100, dt = 0.1, t_save = 1,
     new_sim@n_pp[new_indices, ] <- sim@n_pp[2:no_t, ]
     new_sim@n_other[old_indices, ] <- object@n_other
     new_sim@n_other[new_indices, ] <- sim@n_other[2:no_t, 
-                                                  ]
+    ]
     new_sim@effort[old_indices, ] <- object@effort
     new_sim@effort[new_indices, ] <- sim@effort[2:no_t, ]
     return(new_sim)
@@ -242,7 +242,7 @@ update_waa <- function(waa,grow,spec,dt,params){
 ##############
 
 project_dyn_waa <- function (object, effort, t_max = 100, dt = 0.1, t_save = 1, 
-                         t_start = 0, initial_n, initial_n_pp, append = TRUE, progress_bar = TRUE, inter_mat,kappa_dyn,waa_initial,nages=20, ...) 
+                             t_start = 0, initial_n, initial_n_pp, append = TRUE, progress_bar = TRUE, inter_mat,kappa_dyn,waa_initial,nages=20, ...) 
 {
   validObject(object)
   if (is(object, "MizerSim")) {
@@ -387,9 +387,9 @@ project_dyn_waa <- function (object, effort, t_max = 100, dt = 0.1, t_save = 1,
     
     ## 
     n_list <- project_simple_waa(params, n = n_list$n, n_pp = n_list$n_pp, 
-                             n_other = n_list$n_other, t = t, dt = dt, steps = skip, 
-                             effort = current_effort, resource_dynamics_fn = resource_dynamics_fn, 
-                             other_dynamics_fns = other_dynamics_fns, rates_fns = rates_fns,waa=waa)
+                                 n_other = n_list$n_other, t = t, dt = dt, steps = skip, 
+                                 effort = current_effort, resource_dynamics_fn = resource_dynamics_fn, 
+                                 other_dynamics_fns = other_dynamics_fns, rates_fns = rates_fns,waa=waa)
     t <- t + t_save
     if (is(progress_bar, "Progress")) {
       progress_bar$inc(amount = proginc)
@@ -519,7 +519,7 @@ project_simple_waa <-
       n <- inner_project_loop(no_sp = no_sp, no_w = no_w, n = n,
                               A = a, B = b, S = S,
                               w_min_idx = params@w_min_idx)
-
+      
       # * Update time ----
       t <- t + dt
     }
@@ -539,7 +539,7 @@ getNumbers <- function (sim){
 
 getNumbers_mat <- function (sim){
   numbers <- sweep(sweep(sim@n, c(2, 3), sim@params@maturity, 
-                               "*"), 3, sim@params@dw, "*") 
+                         "*"), 3, sim@params@dw, "*") 
   return(numbers)
 }
 
@@ -631,42 +631,42 @@ get_catch_at_age <- function(input,t_save,max_ages=(dim(input[[2]])[3]-1),biomas
 ##########
 
 getGrowthCurves1 <- 
-function (object, species = NULL, max_age = 20, percentage = FALSE) 
-{
-  if (is(object, "MizerSim")) {
-    params <- object@params
-    params <- setInitialValues(params, object)
-  }
-  else if (is(object, "MizerParams")) {
-    params <- validParams(object)
-  }
-  else {
-    stop("The first argument to `getGrowthCurves()` must be a ", 
-         "MizerParams or a MizerSim object.")
-  }
-  species <- valid_species_arg(params, species)
-  idx <- which(params@species_params$species %in% species)
-  species <- params@species_params$species[idx]
-  age <- 0:max_age
-  ws <- array(dim = c(length(species), length(age)), dimnames = list(Species = species, 
-                                                                     Age = age))
-  g <- getEGrowth(params)
-  for (j in seq_along(species)) {
-    i <- idx[j]
-    g_fn <- stats::approxfun(c(params@w, params@species_params$w_inf[[i]]), 
-                             c(g[i, ], 0))
-    myodefun <- function(t, state, parameters) {
-      return(list(g_fn(state)))
+  function (object, species = NULL, max_age = 20, percentage = FALSE) 
+  {
+    if (is(object, "MizerSim")) {
+      params <- object@params
+      params <- setInitialValues(params, object)
     }
-    ws[j, ] <- deSolve::ode(y = params@w[params@w_min_idx[i]], 
-                            times = age, func = myodefun)[, 2]
-    if (percentage) {
-      ws[j, ] <- ws[j, ]/params@species_params$w_inf[i] * 
-        100
+    else if (is(object, "MizerParams")) {
+      params <- validParams(object)
     }
+    else {
+      stop("The first argument to `getGrowthCurves()` must be a ", 
+           "MizerParams or a MizerSim object.")
+    }
+    species <- valid_species_arg(params, species)
+    idx <- which(params@species_params$species %in% species)
+    species <- params@species_params$species[idx]
+    age <- 0:max_age
+    ws <- array(dim = c(length(species), length(age)), dimnames = list(Species = species, 
+                                                                       Age = age))
+    g <- getEGrowth(params)
+    for (j in seq_along(species)) {
+      i <- idx[j]
+      g_fn <- stats::approxfun(c(params@w, params@species_params$w_inf[[i]]), 
+                               c(g[i, ], 0))
+      myodefun <- function(t, state, parameters) {
+        return(list(g_fn(state)))
+      }
+      ws[j, ] <- deSolve::ode(y = params@w[params@w_min_idx[i]], 
+                              times = age, func = myodefun)[, 2]
+      if (percentage) {
+        ws[j, ] <- ws[j, ]/params@species_params$w_inf[i] * 
+          100
+      }
+    }
+    return(ws)
   }
-  return(ws)
-}
 
 ########
 ##
@@ -749,8 +749,8 @@ getAnnualsum<- function(input){
 ########
 
 project_dyn_waa_ad_one_year <- function (object, effort, t_max = 100, dt = 0.1, t_save = 1, 
-                             t_start = 0, initial_n, initial_n_pp, append = TRUE, progress_bar = TRUE, inter_mat,kappa_dyn,waa_initial,nages=20,theta,lin=F,def.sel,
-                             ...) 
+                                         t_start = 0, initial_n, initial_n_pp, append = TRUE, progress_bar = TRUE, inter_mat,kappa_dyn,waa_initial,nages=20,theta,lin=F,def.sel,
+                                         ...) 
 {
   params <- object
   kappa_dyn <- exp(theta[25]+kappa_dyn)
@@ -759,7 +759,7 @@ project_dyn_waa_ad_one_year <- function (object, effort, t_max = 100, dt = 0.1, 
   params@initial_n_pp[] <- initial_n_pp
   params@initial_n_other <- initial_n_other
   no_sp <- length(params@w_min_idx)
-
+  
   no_gears <- dim(params@catchability)[1]
   gear_names <- dimnames(params@catchability)[[1]]
   time_effort <- as.numeric(dimnames(effort)[[1]])
@@ -822,8 +822,8 @@ project_dyn_waa_ad_one_year <- function (object, effort, t_max = 100, dt = 0.1, 
     mort_save[i,,] <- n_list$rates$mort
     waa <- n_list$waa
     current_effort <- get_mizer_effort(effort,waa,params@selectivity,params@w,lin=lin,def.sel=def.sel)
-
-     }
+    
+  }
   return(list(sim=sim,waa=waa_save,mort=mort_save))
 }
 
@@ -989,8 +989,8 @@ get_initial <- function(kappa_dyn,inter,num,theta,thetas,num_thetas=num,NS_speci
 progress_one_year <- function(effort,year,mod_run,waa,kappa_dyn,inter,params,theta,prev_run,lin=F,def.sel,append=T){
   if(!missing(prev_run)){
     return(progress_one_year(effort=effort,year=year,
-                      mod_run=prev_run$mod_run,waa=tail(prev_run$mod$waa,n=1)[1,,],kappa_dyn=prev_run$kappa_dyn,inter=prev_run$inter,params=prev_run$params,theta=prev_run$theta,lin=lin,def.sel=prev_run$def.sel,append=append
-                        ))
+                             mod_run=prev_run$mod_run,waa=tail(prev_run$mod$waa,n=1)[1,,],kappa_dyn=prev_run$kappa_dyn,inter=prev_run$inter,params=prev_run$params,theta=prev_run$theta,lin=lin,def.sel=prev_run$def.sel,append=append
+    ))
   }
   #browser()
   test <- project_dyn_waa_ad_one_year(params,effort=effort,kappa_dyn=kappa_dyn[year],inter_mat = inter[,,year],t_save=0.1,waa_initial=waa,dt=0.1,initial_n=tail(mod_run$n,n=1)[1,,],initial_n_pp=tail(mod_run$n_pp,n=1)[1,],theta=theta,lin=lin,def.sel = def.sel)
@@ -1014,53 +1014,53 @@ progress_one_year <- function(effort,year,mod_run,waa,kappa_dyn,inter,params,the
 # spun_up is the burn in time for the mizer model
 
 cond_biols_mizer <- function(name_list, mizer_fits, spin_up = 50, reduce_ages = FALSE)  {
-biols <- FLBiols(lapply(seq_len(length(name_list)), function(st) {
-# yr range
-yrs  <- names(mizer_fits[[1]]$age_stuff$Ms[,names(name_list[st]),1] )[-c(1:spin_up)]
-# age range
-ages <- seq(0, length(mizer_fits[[1]]$age_stuff$num_at_age[1,names(name_list[st]),])-1,1)
-## If the numbers aren't present for all years in a given age, remove these ages
-if(reduce_ages) {
-ages <- ages[apply(t(mizer_fits[[1]]$age_stuff$num_at_age[ac(2009:2019),names(name_list[st]),]) != 0, 1, any)]
-ages <- c(min(ages)):c(max(ages[-length(ages)])+1) ## new maximum age without plus group
-}
-n    <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-m    <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-wt   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-spwn <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-mat  <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-fs   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-for(i in 1:length(mizer_fits)) {
-        n[,,,,,i]   <- t(mizer_fits[[i]]$age_stuff$num_at_age[as.character(as.numeric(yrs)+1),names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
-        m[,,,,,i]   <- t(mizer_fits[[i]]$age_stuff$Ms[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
-        wt[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
-        mat[,,,,,i] <- t(mizer_fits[[i]]$age_stuff$prop_mat[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
-        fs[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$Fs[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
-        spwn[]     <- 0 # ?correct
-        ## Recalculate Ns so as the start of the year, not the end
-          #n[,,,,,i] <- n[,,,,,i]/(exp(-(fs[,,,,,i]+ m[,,,,,i])))
-          ## Can't have zeros in an age class, add a small number - but real inconsistency between n's and catches
-          ## causing problems with very high q's
-          n[,,,,,i][n[,,,,,i]==0] <- 10
-          mat[,,,,,i][is.na(mat[,,,,,i])] <- 0
-         }
-      res <- FLBiol(name = names(name_list[st]),
-                                  n = n,
-                                  m = m,
-                                  wt = wt,
-                                  spwn = spwn)
-      res@mat$mat[] <- mat
-      res@fec$fec[] <- 1
-      res@m[is.na(res@m)] <- 0.01 ## ages over those in the stock, need to check whether we should remove overhanging ages
-      res@wt[is.na(res@wt)] <- 0.01 ## ages over those in the stock, need to check whether we should remove overhanging ages
-      res@n[is.na(res@n)] <- 0 ## ages over those in the stock, need to check whether we should remove overhanging ages
-      units(res@n) <- '1000'
-      units(res@wt) <- "kg"
-      range(res)[["plusgroup"]] <- max(ages)
-      return(res)
-      }))
+  biols <- FLBiols(lapply(seq_len(length(name_list)), function(st) {
+    # yr range
+    yrs  <- names(mizer_fits[[1]]$age_stuff$Ms[,names(name_list[st]),1] )[-c(1:spin_up)]
+    # age range
+    ages <- seq(0, length(mizer_fits[[1]]$age_stuff$num_at_age[1,names(name_list[st]),])-1,1)
+    ## If the numbers aren't present for all years in a given age, remove these ages
+    if(reduce_ages) {
+      ages <- ages[apply(t(mizer_fits[[1]]$age_stuff$num_at_age[ac(2009:2019),names(name_list[st]),]) != 0, 1, any)]
+      ages <- c(min(ages)):c(max(ages[-length(ages)])+1) ## new maximum age without plus group
+    }
+    n    <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
+    m    <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
+    wt   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
+    spwn <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
+    mat  <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
+    fs   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
+    for(i in 1:length(mizer_fits)) {
+      n[,,,,,i]   <- t(mizer_fits[[i]]$age_stuff$num_at_age[as.character(as.numeric(yrs)+1),names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
+      m[,,,,,i]   <- t(mizer_fits[[i]]$age_stuff$Ms[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
+      wt[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
+      mat[,,,,,i] <- t(mizer_fits[[i]]$age_stuff$prop_mat[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
+      fs[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$Fs[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
+      spwn[]     <- 0 # ?correct
+      ## Recalculate Ns so as the start of the year, not the end
+      #n[,,,,,i] <- n[,,,,,i]/(exp(-(fs[,,,,,i]+ m[,,,,,i])))
+      ## Can't have zeros in an age class, add a small number - but real inconsistency between n's and catches
+      ## causing problems with very high q's
+      n[,,,,,i][n[,,,,,i]==0] <- 10
+      mat[,,,,,i][is.na(mat[,,,,,i])] <- 0
+    }
+    res <- FLBiol(name = names(name_list[st]),
+                  n = n,
+                  m = m,
+                  wt = wt,
+                  spwn = spwn)
+    res@mat$mat[] <- mat
+    res@fec$fec[] <- 1
+    res@m[is.na(res@m)] <- 0.01 ## ages over those in the stock, need to check whether we should remove overhanging ages
+    res@wt[is.na(res@wt)] <- 0.01 ## ages over those in the stock, need to check whether we should remove overhanging ages
+    res@n[is.na(res@n)] <- 0 ## ages over those in the stock, need to check whether we should remove overhanging ages
+    units(res@n) <- '1000'
+    units(res@wt) <- "kg"
+    range(res)[["plusgroup"]] <- max(ages)
+    return(res)
+  }))
   return(biols)
-   }
+}
 
 
 ###########################
@@ -1080,143 +1080,143 @@ for(i in 1:length(mizer_fits)) {
 
 create_mizer_fleets <- function(fleets, mizer_fits, name_list, reduce_ages = FALSE) {
   
-flts <- FLFleetsExt(lapply(fleets, function(fl) {
-  print(fl@name)
-  mets <- FLMetiersExt(lapply(fl@metiers, function(mt) {
-  print(mt@name)
-    catches <- FLCatchesExt(lapply(seq_len(length(name_list)), function(st) {
-      stk.name <- names(name_list[st])
-      stk.ices <- name_list[[st]]
-      print(stk.name)
-      if(stk.name=="Sandeel") {stk.ices <- stk.ices[1:4]}  ## horrible hack, but only catches in first 4 sandeel stocks
-      if(!all(stk.ices %in% mt@catches@names)) {res <- FLCatchExt()} else {
-        # yr range
+  flts <- FLFleetsExt(lapply(fleets, function(fl) {
+    print(fl@name)
+    mets <- FLMetiersExt(lapply(fl@metiers, function(mt) {
+      print(mt@name)
+      catches <- FLCatchesExt(lapply(seq_len(length(name_list)), function(st) {
+        stk.name <- names(name_list[st])
+        stk.ices <- name_list[[st]]
+        print(stk.name)
+        if(stk.name=="Sandeel") {stk.ices <- stk.ices[1:4]}  ## horrible hack, but only catches in first 4 sandeel stocks
+        if(!all(stk.ices %in% mt@catches@names)) {res <- FLCatchExt()} else {
+          # yr range
           yrs  <- dimnames(mt@catches[[stk.ices[1]]])$year
           # age range
-            ages <- seq(0, length(mizer_fits[[1]]$age_stuff$cat_bio_at_age[1,names(name_list[st]),])-1,1)
+          ages <- seq(0, length(mizer_fits[[1]]$age_stuff$cat_bio_at_age[1,names(name_list[st]),])-1,1)
           if(reduce_ages) {
             ages <- ages[apply(t(mizer_fits[[1]]$age_stuff$num_at_age[ac(2009:2019),names(name_list[st]),]) != 0, 1, any)]
             ages <- c(min(ages)):c(max(ages[-length(ages)])+1) ## new maximum age without plus group
-            }
+          }
           ## Set up empty quants
           landings.n  <- discards.n  <- landings.wt <- discards.wt <-
-          landings.sel <- discards.sel <- price <- alpha <- beta <-
-          FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
+            landings.sel <- discards.sel <- price <- alpha <- beta <-
+            FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
           ## Extract the fleet data
           if(length(stk.ices)==1) {
-          price[] <-mt@catches[[stk.ices]]@price[1,]
-          ## metier catch
-          met_land    <- mt@catches[[stk.ices]]@landings.n ## in 1000s
-          met_catch   <- mt@catches[[stk.ices]]@landings.n + mt@catches[[stk.ices]]@discards.n ## in 1000s
-          tot_catch   <- catchStock(fleets, stk.ices)
+            price[] <-mt@catches[[stk.ices]]@price[1,]
+            ## metier catch
+            met_land    <- mt@catches[[stk.ices]]@landings.n ## in 1000s
+            met_catch   <- mt@catches[[stk.ices]]@landings.n + mt@catches[[stk.ices]]@discards.n ## in 1000s
+            tot_catch   <- catchStock(fleets, stk.ices)
           }
           ## Case of multiple stocks
           ## Need to sum the relevant variables
           if(length(stk.ices) != 1) {
-          price <-lapply(stk.ices, function(x) mt@catches[[x]]@price)
-          price <- Reduce("+", price)/length(stk.ices)
-          price <- propagate(price, iter = length(mizer_fits), fill.iter = TRUE)
-          ## metier catch
-          met_land    <- Reduce("+",lapply(stk.ices, function(x) mt@catches[[x]]@landings.n))
-          met_catch   <- Reduce("+",lapply(stk.ices, function(x) mt@catches[[x]]@landings.n)) +
-          Reduce("+",lapply(stk.ices, function(x) mt@catches[[x]]@discards.n))  ## in 1000s
-          tot_catch   <- Reduce("+", lapply(stk.ices, function(x) catchStock(fleets, x)))
+            price <-lapply(stk.ices, function(x) mt@catches[[x]]@price)
+            price <- Reduce("+", price)/length(stk.ices)
+            price <- propagate(price, iter = length(mizer_fits), fill.iter = TRUE)
+            ## metier catch
+            met_land    <- Reduce("+",lapply(stk.ices, function(x) mt@catches[[x]]@landings.n))
+            met_catch   <- Reduce("+",lapply(stk.ices, function(x) mt@catches[[x]]@landings.n)) +
+              Reduce("+",lapply(stk.ices, function(x) mt@catches[[x]]@discards.n))  ## in 1000s
+            tot_catch   <- Reduce("+", lapply(stk.ices, function(x) catchStock(fleets, x)))
           }
           ## Case where only one age
           if(length(dimnames(met_catch)$age)==1) {
-          ages_fill   <- dimnames(met_catch)$age
-          met_land    <- expand(met_land, age = ages)
-          met_land[]  <- met_land[ages_fill, ]
-          met_catch   <- expand(met_catch, age = ages)
-          met_catch[] <- met_catch[ages_fill, ]
-          tot_catch   <- expand(tot_catch, age = ages)
-          tot_catch[] <- tot_catch[ages_fill, ]
-          ls   <- met_land/met_catch
+            ages_fill   <- dimnames(met_catch)$age
+            met_land    <- expand(met_land, age = ages)
+            met_land[]  <- met_land[ages_fill, ]
+            met_catch   <- expand(met_catch, age = ages)
+            met_catch[] <- met_catch[ages_fill, ]
+            tot_catch   <- expand(tot_catch, age = ages)
+            tot_catch[] <- tot_catch[ages_fill, ]
+            ls   <- met_land/met_catch
           }
           ## Case where the minimum age is larger then zero
           if(min(as.numeric(dimnames(met_catch)$age)) != 0) {
-          met_land  <- expand(met_land, age = 0:max(as.numeric(dimnames(met_land)$age)))
-          met_land[is.na(met_land)] <- 0
-          met_catch <- expand(met_catch, age = 0:max(as.numeric(dimnames(met_catch)$age)))
-          met_catch[is.na(met_catch)] <- 0
-          tot_catch <- expand(tot_catch, age = 0:max(as.numeric(dimnames(tot_catch)$age)))
-          tot_catch[is.na(tot_catch)] <- 0
-          ls        <- met_land/met_catch
+            met_land  <- expand(met_land, age = 0:max(as.numeric(dimnames(met_land)$age)))
+            met_land[is.na(met_land)] <- 0
+            met_catch <- expand(met_catch, age = 0:max(as.numeric(dimnames(met_catch)$age)))
+            met_catch[is.na(met_catch)] <- 0
+            tot_catch <- expand(tot_catch, age = 0:max(as.numeric(dimnames(tot_catch)$age)))
+            tot_catch[is.na(tot_catch)] <- 0
+            ls        <- met_land/met_catch
           }
           ## Catch where catches greater than our chosen ages
           surplus_ages <- as.numeric(dimnames(met_catch)$age)[!as.numeric(dimnames(met_catch)$age) %in% ages]
           if(length(surplus_ages) != 0) {
-          met_land[ac(min(surplus_ages)-1)]  <- apply(met_land[ac(c(min(surplus_ages)-1,surplus_ages))],2:6, sum,na.rm=TRUE)
-          met_catch[ac(min(surplus_ages)-1)] <- apply(met_catch[ac(c(min(surplus_ages)-1,surplus_ages))],2:6, sum,na.rm=TRUE)
-          tot_catch[ac(min(surplus_ages)-1)] <- apply(tot_catch[ac(c(min(surplus_ages)-1,surplus_ages))],2:6, sum,na.rm=TRUE)
-          met_land  <- trim(met_land, age = ages)
-          met_catch <- trim(met_catch, age = ages)
-          tot_catch <- trim(tot_catch, age = ages)
+            met_land[ac(min(surplus_ages)-1)]  <- apply(met_land[ac(c(min(surplus_ages)-1,surplus_ages))],2:6, sum,na.rm=TRUE)
+            met_catch[ac(min(surplus_ages)-1)] <- apply(met_catch[ac(c(min(surplus_ages)-1,surplus_ages))],2:6, sum,na.rm=TRUE)
+            tot_catch[ac(min(surplus_ages)-1)] <- apply(tot_catch[ac(c(min(surplus_ages)-1,surplus_ages))],2:6, sum,na.rm=TRUE)
+            met_land  <- trim(met_land, age = ages)
+            met_catch <- trim(met_catch, age = ages)
+            tot_catch <- trim(tot_catch, age = ages)
           }
           ## Determine the landings and discards split
           ls <- met_land / met_catch
           for(i in 1:length(mizer_fits)) {
-          ## If the numbers aren't present for all years in a given age, remove these ages
-          ## Final group is a plus group, which we account for elsewhere
-          #ages <- ages[apply(t(mizer_fits[[1]]$age_stuff$num_at_age[-c(1:spin_up),names(name_list[st]),]) != 0, 1, any)]
-          #ages <- c(min(ages)):c(max(ages[-length(ages)])) ## new maximum age without plus group
-          ## Mizer catches shared by the proportion of overall catch
-          mizer_catch <- t(mizer_fits[[i]]$age_stuff$cat_num_at_age[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in 1s, covert to 000s
-          ## Reallocate the catch for ages outside the age range....
-          mismatch_ages <- ages[!ages %in% dimnames(met_catch)$age]
-          match_ages    <- ages[ages %in% dimnames(met_catch)$age]
-          if(max(ages) == max(as.numeric(dimnames(met_catch)$age))) {
-          match_ages    <- match_ages[-length(match_ages)]
-          }
-          #[matching ages (except final plus group age, and first age): split proportionally]
-          match_ages <- matrix(c((met_catch/tot_catch)[ac(match_ages),]),ncol = length(dimnames(met_catch)$year)) *
-          mizer_catch[rownames(mizer_catch) %in% match_ages,]
-          #[older: split evenly from the plus group]
-          older_ages <- c(mismatch_ages[mismatch_ages > as.numeric(max(dimnames(met_catch)$age))], "plus")
-          #old_ages <- t(sapply(matrix(mizer_catch[rownames(mizer_catch) %in% older_ages,],nrow = 1),function(x) x *
-          #                      matrix(met_catch[nrow(met_catch),]/tot_catch[nrow(met_catch),], ncol = length(dimnames(met_catch)$year))))
-          #if(length(older_ages)==0) {
-          #  old_ages <- NULL
-          #} else {
-          tmp <- matrix(mizer_catch[rownames(mizer_catch) %in% older_ages,],ncol = length(dimnames(met_catch)$year))
-          old_ages <- t(t(tmp) * as.numeric(met_catch[nrow(met_catch),]/tot_catch[nrow(met_catch),]))
-          #old_ages <- matrix(rep(old_ages, times = length(older_ages)), ncol =   length(dimnames(met_catch)$year))
-          #}
-          #[0 year olds: split according to the first age group]
-          young_ages <- mismatch_ages[mismatch_ages < as.numeric(min(dimnames(met_catch)$age))]
-          if(length(young_ages)==0) {
-          age_0 <- NULL
-          } else {
-          tmp <- matrix(mizer_catch[rownames(mizer_catch) %in% young_ages,],ncol = length(dimnames(met_catch)$year))
-          age_0 <- t(t(tmp) * as.numeric(met_catch[1,]/tot_catch[1,]))
-          }
-          ## Full catch-at-age
-          caa <- rbind(age_0, match_ages, old_ages)
-          ## Expand landings and discards split
-          ## Old ages
-          if(all(older_ages == "plus")) {
-          ls_old <- NULL
-          } else {
-          ls_old <- old_ages
-          if(!is.null(ls_old)) {
-          ls_old[] <- matrix(rep(c(ls[nrow(ls),]),times = nrow(old_ages)), ncol = ncol(old_ages), byrow = TRUE)
-          }
-          }
-          # first age
-          ls_young   <- age_0
-          if(!is.null(ls_young)) {
-          ls_young[] <- matrix(rep(c(ls[nrow(ls),]),times = nrow(age_0)), ncol = ncol(age_0), byrow = TRUE)
-          }
-          ## Combine
-          lsa <- rbind(ls_young, matrix(ls, ncol = ncol(ls)), ls_old)
-          dsa <- 1-lsa
-          # Fill slots
-          landings.n[,,,,,i]   <- caa * lsa
-          discards.n[,,,,,i]   <- caa * dsa
-          landings.sel[,,,,,i] <- lsa
-          discards.sel[,,,,,i] <- dsa
-          landings.wt[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in kg
-          discards.wt[,,,,,i] <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3
+            ## If the numbers aren't present for all years in a given age, remove these ages
+            ## Final group is a plus group, which we account for elsewhere
+            #ages <- ages[apply(t(mizer_fits[[1]]$age_stuff$num_at_age[-c(1:spin_up),names(name_list[st]),]) != 0, 1, any)]
+            #ages <- c(min(ages)):c(max(ages[-length(ages)])) ## new maximum age without plus group
+            ## Mizer catches shared by the proportion of overall catch
+            mizer_catch <- t(mizer_fits[[i]]$age_stuff$cat_num_at_age[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in 1s, covert to 000s
+            ## Reallocate the catch for ages outside the age range....
+            mismatch_ages <- ages[!ages %in% dimnames(met_catch)$age]
+            match_ages    <- ages[ages %in% dimnames(met_catch)$age]
+            if(max(ages) == max(as.numeric(dimnames(met_catch)$age))) {
+              match_ages    <- match_ages[-length(match_ages)]
+            }
+            #[matching ages (except final plus group age, and first age): split proportionally]
+            match_ages <- matrix(c((met_catch/tot_catch)[ac(match_ages),]),ncol = length(dimnames(met_catch)$year)) *
+              mizer_catch[rownames(mizer_catch) %in% match_ages,]
+            #[older: split evenly from the plus group]
+            older_ages <- c(mismatch_ages[mismatch_ages > as.numeric(max(dimnames(met_catch)$age))], "plus")
+            #old_ages <- t(sapply(matrix(mizer_catch[rownames(mizer_catch) %in% older_ages,],nrow = 1),function(x) x *
+            #                      matrix(met_catch[nrow(met_catch),]/tot_catch[nrow(met_catch),], ncol = length(dimnames(met_catch)$year))))
+            #if(length(older_ages)==0) {
+            #  old_ages <- NULL
+            #} else {
+            tmp <- matrix(mizer_catch[rownames(mizer_catch) %in% older_ages,],ncol = length(dimnames(met_catch)$year))
+            old_ages <- t(t(tmp) * as.numeric(met_catch[nrow(met_catch),]/tot_catch[nrow(met_catch),]))
+            #old_ages <- matrix(rep(old_ages, times = length(older_ages)), ncol =   length(dimnames(met_catch)$year))
+            #}
+            #[0 year olds: split according to the first age group]
+            young_ages <- mismatch_ages[mismatch_ages < as.numeric(min(dimnames(met_catch)$age))]
+            if(length(young_ages)==0) {
+              age_0 <- NULL
+            } else {
+              tmp <- matrix(mizer_catch[rownames(mizer_catch) %in% young_ages,],ncol = length(dimnames(met_catch)$year))
+              age_0 <- t(t(tmp) * as.numeric(met_catch[1,]/tot_catch[1,]))
+            }
+            ## Full catch-at-age
+            caa <- rbind(age_0, match_ages, old_ages)
+            ## Expand landings and discards split
+            ## Old ages
+            if(all(older_ages == "plus")) {
+              ls_old <- NULL
+            } else {
+              ls_old <- old_ages
+              if(!is.null(ls_old)) {
+                ls_old[] <- matrix(rep(c(ls[nrow(ls),]),times = nrow(old_ages)), ncol = ncol(old_ages), byrow = TRUE)
+              }
+            }
+            # first age
+            ls_young   <- age_0
+            if(!is.null(ls_young)) {
+              ls_young[] <- matrix(rep(c(ls[nrow(ls),]),times = nrow(age_0)), ncol = ncol(age_0), byrow = TRUE)
+            }
+            ## Combine
+            lsa <- rbind(ls_young, matrix(ls, ncol = ncol(ls)), ls_old)
+            dsa <- 1-lsa
+            # Fill slots
+            landings.n[,,,,,i]   <- caa * lsa
+            discards.n[,,,,,i]   <- caa * dsa
+            landings.sel[,,,,,i] <- lsa
+            discards.sel[,,,,,i] <- dsa
+            landings.wt[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in kg
+            discards.wt[,,,,,i] <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3
           }
           alpha[] <- 1
           beta[] <- 1
@@ -1224,15 +1224,15 @@ flts <- FLFleetsExt(lapply(fleets, function(fl) {
           price   <- expand(price, age = ages)
           price[] <- price[1,] ## same price for each age
           res <- FLCatchExt(name = stk.name,
-                                          landings.n = landings.n,
-                                          landings.wt = landings.wt,
-                                          landings.sel = landings.sel,
-                                          discards.n = discards.n,
-                                          discards.wt = discards.wt,
-                                          discards.sel = discards.sel,
-                                          price = price,
-                                          alpha = alpha,
-                                          beta = beta)
+                            landings.n = landings.n,
+                            landings.wt = landings.wt,
+                            landings.sel = landings.sel,
+                            discards.n = discards.n,
+                            discards.wt = discards.wt,
+                            discards.sel = discards.sel,
+                            price = price,
+                            alpha = alpha,
+                            beta = beta)
           ## calculate total landings etc..
           res@landings <- computeLandings(res)
           res@discards <- computeDiscards(res)
@@ -1243,27 +1243,27 @@ flts <- FLFleetsExt(lapply(fleets, function(fl) {
           units(res@price) <- 'euros'
           ## fill in plus group details
           range(res)[["plusgroup"]] <- max(ages)
-          }
-      return(res)
+        }
+        return(res)
       }))
-    ## Remove any catches that are NULL
-    stks <- as.character(sapply(catches, name))
-    names(catches) <- stks
-    stks <- stks[stks != "NA"]
-    catches <- catches[stks]
-    return(FLMetierExt(name = mt@name,
-                              effshare = propagate(mt@effshare, iter = length(mizer_fits), fill.iter = TRUE),
-                              vcost = propagate(mt@vcost, iter = length(mizer_fits), fill.iter = TRUE),
-                              catches = catches))
+      ## Remove any catches that are NULL
+      stks <- as.character(sapply(catches, name))
+      names(catches) <- stks
+      stks <- stks[stks != "NA"]
+      catches <- catches[stks]
+      return(FLMetierExt(name = mt@name,
+                         effshare = propagate(mt@effshare, iter = length(mizer_fits), fill.iter = TRUE),
+                         vcost = propagate(mt@vcost, iter = length(mizer_fits), fill.iter = TRUE),
+                         catches = catches))
     }))
-  return(FLFleetExt(name = fl@name,
-                    effort = propagate(fl@effort, iter = length(mizer_fits), fill.iter = TRUE),
-                    fcost = propagate(fl@fcost, iter = length(mizer_fits), fill.iter = TRUE),
-                    capacity = propagate(fl@capacity, iter = length(mizer_fits), fill.iter = TRUE),
-                    crewshare = propagate(fl@crewshare, iter = length(mizer_fits), fill.iter = TRUE),
-                    metiers = mets))
+    return(FLFleetExt(name = fl@name,
+                      effort = propagate(fl@effort, iter = length(mizer_fits), fill.iter = TRUE),
+                      fcost = propagate(fl@fcost, iter = length(mizer_fits), fill.iter = TRUE),
+                      capacity = propagate(fl@capacity, iter = length(mizer_fits), fill.iter = TRUE),
+                      crewshare = propagate(fl@crewshare, iter = length(mizer_fits), fill.iter = TRUE),
+                      metiers = mets))
   }))
-return(flts)
+  return(flts)
 }
 
 
@@ -1279,45 +1279,45 @@ MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
   yr <- year
   
   ni <- dim(biols[[1]]@n)[6] ## number iterations
-            
-            for(i in 1:ni) {
-              
-              for(st in names(biols)) {
-                
-                ## Update numbers following Fs and Ms in mizer
-                #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
-                #  (1-exp(-(covars$mizer_fits[[i]]$age_stuff$Fs[yr,st,] + 
-                #          covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,])))
-                # case of first year
-                if(length(dim(covars$mizer_fits[[1]]$age_stuff$num_at_age))==3) {
-                biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
-                ## weights, Ms and maturity
-                biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
-                biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,]
-                biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[yr,st,] } else {
-			
-                # case of subsequent years``:w
-
-                biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
-                ## weights, Ms and maturity
-                biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
-                biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[st,]
-                biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[st,]   
-                  
-                }
-                
-                ## Can't have zeros in numbers so add a small value
-                biols[[st]]@n[,yr,,,,i][is.na(biols[[st]]@n[,yr,,,,i])]   <- 10 ## 10,000 fish
-                biols[[st]]@n[,yr,,,,i][biols[[st]]@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
-                biols[[st]]@wt[,yr,,,,i][is.na(biols[[st]]@wt[,yr,,,,i])] <- 0
-                biols[[st]]@m[,yr,,,,i][is.na(biols[[st]]@m[,yr,,,,i])]   <- 0
-                
-              }
-              
-            }
+  
+  for(i in 1:ni) {
+    
+    for(st in names(biols)) {
+      
+      ## Update numbers following Fs and Ms in mizer
+      #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
+      #  (1-exp(-(covars$mizer_fits[[i]]$age_stuff$Fs[yr,st,] + 
+      #          covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,])))
+      # case of first year
+      if(length(dim(covars$mizer_fits[[1]]$age_stuff$num_at_age))==3) {
+        biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
+        ## weights, Ms and maturity
+        biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
+        biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,]
+        biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[yr,st,] } else {
+          
+          # case of subsequent years``:w
+          
+          biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
+          ## weights, Ms and maturity
+          biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
+          biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[st,]
+          biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[st,]   
+          
+        }
+      
+      ## Can't have zeros in numbers so add a small value
+      biols[[st]]@n[,yr,,,,i][is.na(biols[[st]]@n[,yr,,,,i])]   <- 10 ## 10,000 fish
+      biols[[st]]@n[,yr,,,,i][biols[[st]]@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
+      biols[[st]]@wt[,yr,,,,i][is.na(biols[[st]]@wt[,yr,,,,i])] <- 0
+      biols[[st]]@m[,yr,,,,i][is.na(biols[[st]]@m[,yr,,,,i])]   <- 0
+      
+    }
+    
+  }
   
   return(list(biols = biols))
-            
+  
 }
 
 
@@ -1332,39 +1332,39 @@ runMizer <- function(biols, fleets, covars, year) {
   yr <- year
   ni <- dim(biols[[1]]@n)[6]
   
- ## First get the Fs from the catches, numbers-at-age and Ms
- catchN <- lapply(biols@names, function(x) catchStock(fleets, x))
- names(catchN) <- names(biols)
- 
- # Borrow the FLash function - is quick 
- F_st <- lapply(biols@names, function(st) FLash:::calcF(m(biols[[st]])[,yr],catchN[[st]][,yr],n(biols[[st]][,yr])))
- names(F_st) <- biols@names
- 
- ## Now reformat for mizer  
- 
- 
- F_mizer <- lapply(1:ni, function(i) {
-   
-   F_length <- max(sapply(F_st, function(x) dim(x)[1]))
-   
-   F_mat <-t(sapply(names(F_st), function(st) { 
-     Fs <- c(F_st[[st]][,,,,,i]) 
-     Fs <- c(Fs, rep(Fs[length(Fs)],times = F_length - length(Fs)))
-     }))
-   
-   ## reorder to the mizer inputs
-   F_mat <- F_mat[mizer_fits[[1]]$params@species_params$species,]
-   F_mat[is.na(F_mat)| F_mat < 0] <- 0
-   
-   return(F_mat)
-   
- }) 
- 
- covars$mizer_fits <- lapply(1:ni, function(m) {
-   progress_one_year(year=yr,effort=F_mizer[[m]],prev_run=mizer_fits[[m]])
- })
- 
- return(covars)
+  ## First get the Fs from the catches, numbers-at-age and Ms
+  catchN <- lapply(biols@names, function(x) catchStock(fleets, x))
+  names(catchN) <- names(biols)
+  
+  # Borrow the FLash function - is quick 
+  F_st <- lapply(biols@names, function(st) FLash:::calcF(m(biols[[st]])[,yr],catchN[[st]][,yr],n(biols[[st]][,yr])))
+  names(F_st) <- biols@names
+  
+  ## Now reformat for mizer  
+  
+  
+  F_mizer <- lapply(1:ni, function(i) {
+    
+    F_length <- max(sapply(F_st, function(x) dim(x)[1]))
+    
+    F_mat <-t(sapply(names(F_st), function(st) { 
+      Fs <- c(F_st[[st]][,,,,,i]) 
+      Fs <- c(Fs, rep(Fs[length(Fs)],times = F_length - length(Fs)))
+    }))
+    
+    ## reorder to the mizer inputs
+    F_mat <- F_mat[mizer_fits[[1]]$params@species_params$species,]
+    F_mat[is.na(F_mat)| F_mat < 0] <- 0
+    
+    return(F_mat)
+    
+  }) 
+  
+  covars$mizer_fits <- lapply(1:ni, function(m) {
+    progress_one_year(year=yr,effort=F_mizer[[m]],prev_run=mizer_fits[[m]])
+  })
+  
+  return(covars)
   
 }
 
@@ -1391,44 +1391,44 @@ MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
   yr <- year
   
   ni <- dim(biols[[1]]@n)[6] ## number iterations
-            
-            for(i in 1:ni) {
-              
-              for(st in names(biols)) {
-                
-                ## Update numbers following Fs and Ms in mizer
-                #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
-                #  (1-exp(-(covars$mizer_fits[[i]]$age_stuff$Fs[yr,st,] + 
-                #          covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,])))
-                # case of first year
-                if(length(dim(covars$mizer_fits[[1]]$age_stuff$num_at_age))==3) {
-                biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
-                ## weights, Ms and maturity
-                biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
-                biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,]
-                biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[yr,st,] } else {
-			
-                # case of subsequent years``:w
-
-                biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
-                ## weights, Ms and maturity
-                biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
-                biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[st,]
-                biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[st,]   
-                  
-                }
-                
-                ## Can't have zeros in numbers so add a small value
-                biols[[st]]@n[,yr,,,,i][is.na(biols[[st]]@n[,yr,,,,i])]   <- 10 ## 10,000 fish
-                biols[[st]]@n[,yr,,,,i][biols[[st]]@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
-                biols[[st]]@wt[,yr,,,,i][is.na(biols[[st]]@wt[,yr,,,,i])] <- 0
-                biols[[st]]@m[,yr,,,,i][is.na(biols[[st]]@m[,yr,,,,i])]   <- 0
-                
-              }
-              
-            }
+  
+  for(i in 1:ni) {
+    
+    for(st in names(biols)) {
+      
+      ## Update numbers following Fs and Ms in mizer
+      #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
+      #  (1-exp(-(covars$mizer_fits[[i]]$age_stuff$Fs[yr,st,] + 
+      #          covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,])))
+      # case of first year
+      if(length(dim(covars$mizer_fits[[1]]$age_stuff$num_at_age))==3) {
+        biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
+        ## weights, Ms and maturity
+        biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
+        biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,]
+        biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[yr,st,] } else {
+          
+          # case of subsequent years``:w
+          
+          biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
+          ## weights, Ms and maturity
+          biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
+          biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[st,]
+          biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[st,]   
+          
+        }
+      
+      ## Can't have zeros in numbers so add a small value
+      biols[[st]]@n[,yr,,,,i][is.na(biols[[st]]@n[,yr,,,,i])]   <- 10 ## 10,000 fish
+      biols[[st]]@n[,yr,,,,i][biols[[st]]@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
+      biols[[st]]@wt[,yr,,,,i][is.na(biols[[st]]@wt[,yr,,,,i])] <- 0
+      biols[[st]]@m[,yr,,,,i][is.na(biols[[st]]@m[,yr,,,,i])]   <- 0
+      
+    }
+    
+  }
   
   return(list(biols = biols))
-            
+  
 }
 
