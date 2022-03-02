@@ -25,6 +25,8 @@ importFrom("nloptr", "nloptr")
 #importFrom("nnet", "predict.multinom")
 importFrom("purrr", "map", "partial", "set_names")
 importFrom("tibble", "tibble")
+importFrom("Rcpp", "evalCpp")
+useDynLib(FLBEIA)
 
 export(
 "advSum",
@@ -90,6 +92,7 @@ export(
   "FroeseHCR",
   "ghlHCR",
 # "initPop_lifeHist",
+"inner_project_loop",
   "IcesHCR",
   "joinIter",
   "L_flbeia",
@@ -171,4 +174,3 @@ exportClasses(
   "FLMetierExt",
   "FLMetiersExt"
 )
-

@@ -9,3 +9,7 @@ condition_flcatches <- function(fl, SLwt, SDwt, B, st, mean_yrs_q, mean_yrs_wts,
     .Call('_FLBEIA_condition_flcatches', PACKAGE = 'FLBEIA', fl, SLwt, SDwt, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards)
 }
 
+inner_project_loop <- function(no_sp, no_w, n, A, B, S, w_min_idx) {
+    .Call('_FLBEIA_inner_project_loop', PACKAGE = 'FLBEIA', no_sp, no_w, n, A, B, S, w_min_idx)
+}
+
