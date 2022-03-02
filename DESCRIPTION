@@ -144,6 +144,7 @@ Collate:
     "plotFLBiols.R"
     "PlotFLFleets.R"
     "PlotfltStkSum.R"
+    "RcppExports.R"
     "Results_JoinIterations.R"
     "Results_Summary.R"
     "Results_SummaryPlots.R"

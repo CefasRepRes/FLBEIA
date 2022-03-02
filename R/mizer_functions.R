@@ -1013,29 +1013,29 @@ progress_one_year <- function(effort,year,mod_run,waa,kappa_dyn,inter,params,the
 # they encompass. e.g. "Cod" = "cod.27.47d20"
 # spun_up is the burn in time for the mizer model
 
-cond_biols_mizer <- function(name_list, mizer_fits, spin_up = 50, reduce_ages = FALSE)  {
+cond_biols_mizer <- function(name_list, mizer, spin_up = 50, reduce_ages = FALSE)  {
   biols <- FLBiols(lapply(seq_len(length(name_list)), function(st) {
     # yr range
-    yrs  <- names(mizer_fits[[1]]$age_stuff$Ms[,names(name_list[st]),1] )[-c(1:spin_up)]
+    yrs  <- names(mizer[[1]]$age_stuff$Ms[,names(name_list[st]),1] )[-c(1:spin_up)]
     # age range
-    ages <- seq(0, length(mizer_fits[[1]]$age_stuff$num_at_age[1,names(name_list[st]),])-1,1)
+    ages <- seq(0, length(mizer[[1]]$age_stuff$num_at_age[1,names(name_list[st]),])-1,1)
     ## If the numbers aren't present for all years in a given age, remove these ages
     if(reduce_ages) {
-      ages <- ages[apply(t(mizer_fits[[1]]$age_stuff$num_at_age[ac(2009:2019),names(name_list[st]),]) != 0, 1, any)]
+      ages <- ages[apply(t(mizer[[1]]$age_stuff$num_at_age[ac(2009:2019),names(name_list[st]),]) != 0, 1, any)]
       ages <- c(min(ages)):c(max(ages[-length(ages)])+1) ## new maximum age without plus group
     }
-    n    <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-    m    <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-    wt   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-    spwn <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-    mat  <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-    fs   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
-    for(i in 1:length(mizer_fits)) {
-      n[,,,,,i]   <- t(mizer_fits[[i]]$age_stuff$num_at_age[as.character(as.numeric(yrs)+1),names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
-      m[,,,,,i]   <- t(mizer_fits[[i]]$age_stuff$Ms[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
-      wt[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
-      mat[,,,,,i] <- t(mizer_fits[[i]]$age_stuff$prop_mat[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
-      fs[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$Fs[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
+    n    <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
+    m    <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
+    wt   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
+    spwn <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
+    mat  <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
+    fs   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
+    for(i in 1:length(mizer)) {
+      n[,,,,,i]   <- t(mizer[[i]]$age_stuff$num_at_age[as.character(as.numeric(yrs)+1),names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
+      m[,,,,,i]   <- t(mizer[[i]]$age_stuff$Ms[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
+      wt[,,,,,i]  <- t(mizer[[i]]$age_stuff$mean_waa[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
+      mat[,,,,,i] <- t(mizer[[i]]$age_stuff$prop_mat[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
+      fs[,,,,,i]  <- t(mizer[[i]]$age_stuff$Fs[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
       spwn[]     <- 0 # ?correct
       ## Recalculate Ns so as the start of the year, not the end
       #n[,,,,,i] <- n[,,,,,i]/(exp(-(fs[,,,,,i]+ m[,,,,,i])))
@@ -1078,7 +1078,7 @@ cond_biols_mizer <- function(name_list, mizer_fits, spin_up = 50, reduce_ages = 
 # name_list is a list of names from the mizer model and the ices stock names
 # they encompass. e.g. "Cod" = "cod.27.47d20"
 
-create_mizer_fleets <- function(fleets, mizer_fits, name_list, reduce_ages = FALSE) {
+create_mizer_fleets <- function(fleets, mizer, name_list, reduce_ages = FALSE) {
   
   flts <- FLFleetsExt(lapply(fleets, function(fl) {
     print(fl@name)
@@ -1093,15 +1093,15 @@ create_mizer_fleets <- function(fleets, mizer_fits, name_list, reduce_ages = FAL
           # yr range
           yrs  <- dimnames(mt@catches[[stk.ices[1]]])$year
           # age range
-          ages <- seq(0, length(mizer_fits[[1]]$age_stuff$cat_bio_at_age[1,names(name_list[st]),])-1,1)
+          ages <- seq(0, length(mizer[[1]]$age_stuff$cat_bio_at_age[1,names(name_list[st]),])-1,1)
           if(reduce_ages) {
-            ages <- ages[apply(t(mizer_fits[[1]]$age_stuff$num_at_age[ac(2009:2019),names(name_list[st]),]) != 0, 1, any)]
+            ages <- ages[apply(t(mizer[[1]]$age_stuff$num_at_age[ac(2009:2019),names(name_list[st]),]) != 0, 1, any)]
             ages <- c(min(ages)):c(max(ages[-length(ages)])+1) ## new maximum age without plus group
           }
           ## Set up empty quants
           landings.n  <- discards.n  <- landings.wt <- discards.wt <-
             landings.sel <- discards.sel <- price <- alpha <- beta <-
-            FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer_fits))))
+            FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
           ## Extract the fleet data
           if(length(stk.ices)==1) {
             price[] <-mt@catches[[stk.ices]]@price[1,]
@@ -1115,7 +1115,7 @@ create_mizer_fleets <- function(fleets, mizer_fits, name_list, reduce_ages = FAL
           if(length(stk.ices) != 1) {
             price <-lapply(stk.ices, function(x) mt@catches[[x]]@price)
             price <- Reduce("+", price)/length(stk.ices)
-            price <- propagate(price, iter = length(mizer_fits), fill.iter = TRUE)
+            price <- propagate(price, iter = length(mizer), fill.iter = TRUE)
             ## metier catch
             met_land    <- Reduce("+",lapply(stk.ices, function(x) mt@catches[[x]]@landings.n))
             met_catch   <- Reduce("+",lapply(stk.ices, function(x) mt@catches[[x]]@landings.n)) +
@@ -1155,13 +1155,13 @@ create_mizer_fleets <- function(fleets, mizer_fits, name_list, reduce_ages = FAL
           }
           ## Determine the landings and discards split
           ls <- met_land / met_catch
-          for(i in 1:length(mizer_fits)) {
+          for(i in 1:length(mizer)) {
             ## If the numbers aren't present for all years in a given age, remove these ages
             ## Final group is a plus group, which we account for elsewhere
-            #ages <- ages[apply(t(mizer_fits[[1]]$age_stuff$num_at_age[-c(1:spin_up),names(name_list[st]),]) != 0, 1, any)]
+            #ages <- ages[apply(t(mizer[[1]]$age_stuff$num_at_age[-c(1:spin_up),names(name_list[st]),]) != 0, 1, any)]
             #ages <- c(min(ages)):c(max(ages[-length(ages)])) ## new maximum age without plus group
             ## Mizer catches shared by the proportion of overall catch
-            mizer_catch <- t(mizer_fits[[i]]$age_stuff$cat_num_at_age[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in 1s, covert to 000s
+            mizer_catch <- t(mizer[[i]]$age_stuff$cat_num_at_age[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in 1s, covert to 000s
             ## Reallocate the catch for ages outside the age range....
             mismatch_ages <- ages[!ages %in% dimnames(met_catch)$age]
             match_ages    <- ages[ages %in% dimnames(met_catch)$age]
@@ -1215,8 +1215,8 @@ create_mizer_fleets <- function(fleets, mizer_fits, name_list, reduce_ages = FAL
             discards.n[,,,,,i]   <- caa * dsa
             landings.sel[,,,,,i] <- lsa
             discards.sel[,,,,,i] <- dsa
-            landings.wt[,,,,,i]  <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in kg
-            discards.wt[,,,,,i] <- t(mizer_fits[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3
+            landings.wt[,,,,,i]  <- t(mizer[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in kg
+            discards.wt[,,,,,i] <- t(mizer[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3
           }
           alpha[] <- 1
           beta[] <- 1
@@ -1252,15 +1252,15 @@ create_mizer_fleets <- function(fleets, mizer_fits, name_list, reduce_ages = FAL
       stks <- stks[stks != "NA"]
       catches <- catches[stks]
       return(FLMetierExt(name = mt@name,
-                         effshare = propagate(mt@effshare, iter = length(mizer_fits), fill.iter = TRUE),
-                         vcost = propagate(mt@vcost, iter = length(mizer_fits), fill.iter = TRUE),
+                         effshare = propagate(mt@effshare, iter = length(mizer), fill.iter = TRUE),
+                         vcost = propagate(mt@vcost, iter = length(mizer), fill.iter = TRUE),
                          catches = catches))
     }))
     return(FLFleetExt(name = fl@name,
-                      effort = propagate(fl@effort, iter = length(mizer_fits), fill.iter = TRUE),
-                      fcost = propagate(fl@fcost, iter = length(mizer_fits), fill.iter = TRUE),
-                      capacity = propagate(fl@capacity, iter = length(mizer_fits), fill.iter = TRUE),
-                      crewshare = propagate(fl@crewshare, iter = length(mizer_fits), fill.iter = TRUE),
+                      effort = propagate(fl@effort, iter = length(mizer), fill.iter = TRUE),
+                      fcost = propagate(fl@fcost, iter = length(mizer), fill.iter = TRUE),
+                      capacity = propagate(fl@capacity, iter = length(mizer), fill.iter = TRUE),
+                      crewshare = propagate(fl@crewshare, iter = length(mizer), fill.iter = TRUE),
                       metiers = mets))
   }))
   return(flts)
@@ -1286,23 +1286,23 @@ MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
       
       ## Update numbers following Fs and Ms in mizer
       #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
-      #  (1-exp(-(covars$mizer_fits[[i]]$age_stuff$Fs[yr,st,] + 
-      #          covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,])))
+      #  (1-exp(-(covars$mizer[[i]]$age_stuff$Fs[yr,st,] + 
+      #          covars$mizer[[i]]$age_stuff$Ms[yr,st,])))
       # case of first year
-      if(length(dim(covars$mizer_fits[[1]]$age_stuff$num_at_age))==3) {
-        biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
+      if(length(dim(covars$mizer[[1]]$age_stuff$num_at_age))==3) {
+        biols[[st]]@n[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
         ## weights, Ms and maturity
-        biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
-        biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,]
-        biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[yr,st,] } else {
+        biols[[st]]@wt[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
+        biols[[st]]@m[,yr,,,,i]       <- covars$mizer[[i]]$age_stuff$Ms[yr,st,]
+        biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer[[i]]$age_stuff$prop_mat[yr,st,] } else {
           
           # case of subsequent years``:w
           
-          biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
+          biols[[st]]@n[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
           ## weights, Ms and maturity
-          biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
-          biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[st,]
-          biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[st,]   
+          biols[[st]]@wt[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
+          biols[[st]]@m[,yr,,,,i]       <- covars$mizer[[i]]$age_stuff$Ms[st,]
+          biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer[[i]]$age_stuff$prop_mat[st,]   
           
         }
       
@@ -1327,7 +1327,9 @@ MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
 ##
 ##########################
 
-runMizer <- function(biols, fleets, covars, year) {
+runMizer <- function(biols = biols, fleets = fleets, covars = covars, year = year, ...) {
+  
+  print("Running mizer forwards")
   
   yr <- year
   ni <- dim(biols[[1]]@n)[6]
@@ -1342,7 +1344,6 @@ runMizer <- function(biols, fleets, covars, year) {
   
   ## Now reformat for mizer  
   
-  
   F_mizer <- lapply(1:ni, function(i) {
     
     F_length <- max(sapply(F_st, function(x) dim(x)[1]))
@@ -1353,15 +1354,18 @@ runMizer <- function(biols, fleets, covars, year) {
     }))
     
     ## reorder to the mizer inputs
-    F_mat <- F_mat[mizer_fits[[1]]$params@species_params$species,]
+    F_mat <- F_mat[mizer[[1]]$params@species_params$species,]
     F_mat[is.na(F_mat)| F_mat < 0] <- 0
+    
+    print(paste("iteration", i, sep = " "))
+    print(Fmat)
     
     return(F_mat)
     
   }) 
   
-  covars$mizer_fits <- lapply(1:ni, function(m) {
-    progress_one_year(year=yr,effort=F_mizer[[m]],prev_run=mizer_fits[[m]])
+  covars$mizer <- lapply(1:ni, function(m) {
+    progress_one_year(year=yr,effort=F_mizer[[m]],prev_run=mizer[[m]])
   })
   
   return(covars)
@@ -1398,23 +1402,23 @@ MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
       
       ## Update numbers following Fs and Ms in mizer
       #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
-      #  (1-exp(-(covars$mizer_fits[[i]]$age_stuff$Fs[yr,st,] + 
-      #          covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,])))
+      #  (1-exp(-(covars$mizer[[i]]$age_stuff$Fs[yr,st,] + 
+      #          covars$mizer[[i]]$age_stuff$Ms[yr,st,])))
       # case of first year
-      if(length(dim(covars$mizer_fits[[1]]$age_stuff$num_at_age))==3) {
-        biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
+      if(length(dim(covars$mizer[[1]]$age_stuff$num_at_age))==3) {
+        biols[[st]]@n[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
         ## weights, Ms and maturity
-        biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
-        biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[yr,st,]
-        biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[yr,st,] } else {
+        biols[[st]]@wt[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
+        biols[[st]]@m[,yr,,,,i]       <- covars$mizer[[i]]$age_stuff$Ms[yr,st,]
+        biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer[[i]]$age_stuff$prop_mat[yr,st,] } else {
           
           # case of subsequent years``:w
           
-          biols[[st]]@n[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
+          biols[[st]]@n[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
           ## weights, Ms and maturity
-          biols[[st]]@wt[,yr,,,,i]      <- covars$mizer_fits[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
-          biols[[st]]@m[,yr,,,,i]       <- covars$mizer_fits[[i]]$age_stuff$Ms[st,]
-          biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer_fits[[i]]$age_stuff$prop_mat[st,]   
+          biols[[st]]@wt[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
+          biols[[st]]@m[,yr,,,,i]       <- covars$mizer[[i]]$age_stuff$Ms[st,]
+          biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer[[i]]$age_stuff$prop_mat[st,]   
           
         }
       
@@ -1430,5 +1434,62 @@ MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
   
   return(list(biols = biols))
   
+}
+
+##################
+####
+################
+
+
+calculate.q.sel.flrObjs.cpp <- function(biols, stocks, fleets, BDs, fleets.ctrl, mean.yrs.q, mean.yrs.wts, mean.yrs.sel, sim.yrs, LO = FALSE, UseCWt4Discards = FALSE){
+  
+  for(st in names(biols)){
+    
+    na <- dim(biols[[st]]@n)[1]
+    
+    ## Year references
+    yrs  <- as.numeric(dimnames(fleets[[1]]@effort)$year)
+    first_yr_sim <- which(yrs == sim.yrs[1]) - 1
+    last_yr_sim  <- which(yrs == sim.yrs[length(sim.yrs)]) - 1
+    
+    ## years in  numerics
+    first_avg_yr_q <- which(yrs == mean.yrs.q[1]) - 1
+    last_avg_yr_q  <- which(yrs == mean.yrs.q[length(mean.yrs.q)]) - 1
+    
+    first_avg_yr_wts <- which(yrs == mean.yrs.wts[1]) - 1
+    last_avg_yr_wts  <- which(yrs == mean.yrs.wts[length(mean.yrs.wts)]) - 1
+    
+    first_avg_yr_sel <- which(yrs == mean.yrs.sel[1]) - 1
+    last_avg_yr_sel  <- which(yrs == mean.yrs.sel[length(mean.yrs.sel)]) - 1
+    
+    
+    if(na != 1){  # 'Biomass' in numbers because the catch is in numbers, in the middle of the season.
+      B <- biols[[st]]@n*exp(-biols[[st]]@m/2)  
+    }else{ # 'Biomass' in weight because the growth is in weight => later we use the catch in weight.
+      
+      if(is.null(BDs[[st]])) gB <- 0
+      else gB <- BDs[[st]]@gB
+      
+      B <- biols[[st]]@n*biols[[st]]@wt + gB
+    }
+    
+    SLwt <- window(stocks[[st]]@landings.wt, start = yrs[1], end = yrs[length(yrs)])
+    SDwt <- window(stocks[[st]]@discards.wt, start = yrs[1], end = yrs[length(yrs)])
+    
+    fleets <- condition_flcatches(fl =fleets,
+                                  SLwt = as.vector(SLwt),
+                                  SDwt = as.vector(SDwt),
+                                  B = as.vector(B), 
+                                  st = st, 
+                                  mean_yrs_q = first_avg_yr_q:last_avg_yr_q, 
+                                  mean_yrs_wts = first_avg_yr_wts:last_avg_yr_wts,
+                                  mean_yrs_sel = first_avg_yr_sel:last_avg_yr_sel,
+                                  sim_yrs = first_yr_sim:last_yr_sim,
+                                  LO = LO,
+                                  UseCWt4Discards = UseCWt4Discards)
+    
+  }
+  
+  return(fleets)
 }
 
