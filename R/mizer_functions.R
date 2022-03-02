@@ -1358,7 +1358,7 @@ runMizer <- function(biols = biols, fleets = fleets, covars = covars, year = yea
     F_mat[is.na(F_mat)| F_mat < 0] <- 0
     
     print(paste("iteration", i, sep = " "))
-    print(Fmat)
+    print(F_mat)
     
     return(F_mat)
     
