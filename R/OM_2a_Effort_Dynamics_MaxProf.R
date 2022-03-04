@@ -230,6 +230,7 @@ MaxProfit <- function(fleets,
       E0 <- Et*efs.m
       
       # in case where total effort is zero
+      cat('Et: ', Et,'\n')
       if (Et == 0) {
         E0  <- 1e-8*efs.m
       }
