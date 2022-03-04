@@ -1274,15 +1274,21 @@ create_mizer_fleets <- function(fleets, mizer, name_list, reduce_ages = FALSE) {
 ##################################
 
 
-MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
+mizerGrowth <- function(biols, SRs, fleets, year, season, stknm, covars, ...) {
   
+  cat('-----------------mizerGrowth-----------\n')
+  
+  biol <- biols[[stknm]]  
+  SR   <- SRs[[stknm]] ## not really needed
   yr <- year
+  yr_mizer <- length(covars.ctrl$mizer$first.year:as.numeric(dimnames(biols[[1]]@n)$year[1])) + yr # correct ref year for mizer
+  
   
   ni <- dim(biols[[1]]@n)[6] ## number iterations
   
   for(i in 1:ni) {
     
-    for(st in names(biols)) {
+    for(stk in stknm) {
       
       ## Update numbers following Fs and Ms in mizer
       #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
@@ -1290,33 +1296,72 @@ MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
       #          covars$mizer[[i]]$age_stuff$Ms[yr,st,])))
       # case of first year
       if(length(dim(covars$mizer[[1]]$age_stuff$num_at_age))==3) {
-        biols[[st]]@n[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
-        ## weights, Ms and maturity
-        biols[[st]]@wt[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
-        biols[[st]]@m[,yr,,,,i]       <- covars$mizer[[i]]$age_stuff$Ms[yr,st,]
-        biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer[[i]]$age_stuff$prop_mat[yr,st,] } else {
+        
+        ## Numbers
+        Ns <-  covars$mizer[[i]]$age_stuff$num_at_age[yr_mizer-1,stk,]/1e3 ## mizer is end year, so take end previous year. in 000s
+        ## mean weight
+        Wts <- covars$mizer[[i]]$age_stuff$mean_waa[yr_mizer,stk,]/1e3 ## in kg
+        ## natural mortality
+        Ms <-  covars$mizer[[i]]$age_stuff$Ms[yr_mizer,stk,]
+        ## maturity
+        Mat <- covars$mizer[[i]]$age_stuff$prop_mat[yr_mizer,stk,]
+        
+          } else {
           
-          # case of subsequent years``:w
-          
-          biols[[st]]@n[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
-          ## weights, Ms and maturity
-          biols[[st]]@wt[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
-          biols[[st]]@m[,yr,,,,i]       <- covars$mizer[[i]]$age_stuff$Ms[st,]
-          biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer[[i]]$age_stuff$prop_mat[st,]   
-          
-        }
+          # case of subsequent years
+            
+            ## Numbers
+            Ns <-  covars$mizer[[i]]$age_stuff$num_at_age[stk,]/1e3 ## Already previous year. in 000s
+            ## mean weight
+            Wts <- covars$mizer[[i]]$age_stuff$mean_waa[stk,]/1e3 ## in kg
+            ## natural mortality
+            Ms <-  covars$mizer[[i]]$age_stuff$Ms[stk,]
+            ## maturity
+            Mat <- covars$mizer[[i]]$age_stuff$prop_mat[stk,]   
+    
+          }
+      
+      ## Need to reduce the dimensions if stock object has less ages than the mizer model
+      if(dim(biol@n)[1] < length(Ns)) {
+        
+        diff <- length(Ns) - dim(biol@n)[1] 
+        
+        # Reduce weights
+        Wts[(length(Wts)-diff)] <- weighted.mean(x = Wts[(length(Wts)-diff):length(Wts)], w = Ns[(length(Ns)-diff):length(Ns)], na.rm = TRUE)
+        # Reduce Ms
+        Ms[(length(Ms)-diff)] <- weighted.mean(x = Ms[(length(Ms)-diff):length(Ms)], w = Ns[(length(Ns)-diff):length(Ns)], na.rm = TRUE)
+        # Reduce Mats
+        Mat[(length(Mat)-diff)] <- weighted.mean(x = Mat[(length(Mat)-diff):length(Mat)], w = Ns[(length(Ns)-diff):length(Ns)], na.rm = TRUE)
+        # Reduce Ns
+        Ns[(length(Ns)-diff)] <- sum(Ns[(length(Ns)-diff):length(Ns)])
+        
+        ## Cut down to size
+        
+        Ns  <- Ns[1:dim(biol@n)[1]]
+        Wts <- Wts[1:dim(biol@n)[1]]
+        Ms  <- Ms[1:dim(biol@n)[1]]
+        Mat <- Mat[1:dim(biol@n)[1]]
+        
+      }
+      
+      ## Assign
+      biol@n[,yr,,,,i]      <- Ns
+      ## weights, Ms and maturity
+      biol@wt[,yr,,,,i]      <- Wts
+      biol@m[,yr,,,,i]       <- Ms
+      biol@mat$mat[,yr,,,,i] <- Mat
       
       ## Can't have zeros in numbers so add a small value
-      biols[[st]]@n[,yr,,,,i][is.na(biols[[st]]@n[,yr,,,,i])]   <- 10 ## 10,000 fish
-      biols[[st]]@n[,yr,,,,i][biols[[st]]@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
-      biols[[st]]@wt[,yr,,,,i][is.na(biols[[st]]@wt[,yr,,,,i])] <- 0
-      biols[[st]]@m[,yr,,,,i][is.na(biols[[st]]@m[,yr,,,,i])]   <- 0
+      biol@n[,yr,,,,i][is.na(biol@n[,yr,,,,i])]   <- 10 ## 10,000 fish
+      biol@n[,yr,,,,i][biol@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
+      biol@wt[,yr,,,,i][is.na(biol@wt[,yr,,,,i])] <- 0
+      biol@m[,yr,,,,i][is.na(biol@m[,yr,,,,i])]   <- 0
       
     }
     
   }
   
-  return(list(biols = biols))
+  return(list(biol = biol, SR = SR))
   
 }
 
@@ -1358,8 +1403,8 @@ runMizer <- function(biols = biols, fleets = fleets, covars = covars, year = yea
     F_mat <- F_mat[mizer[[1]]$params@species_params$species,]
     F_mat[is.na(F_mat)| F_mat < 0] <- 0
     
-    print(paste("iteration", i, sep = " "))
-    print(F_mat)
+   # print(paste("iteration", i, sep = " "))
+   # print(F_mat)
     
     return(F_mat)
     
@@ -1382,60 +1427,6 @@ runMizer <- function(biols = biols, fleets = fleets, covars = covars, year = yea
 #######################
 
 
-#---------------------------------#
-## Mizer growth 
-## In Mizer the outputs are numbers
-## at age at end of the year.
-## So here we need just to carry them
-## forward a year and the transition 
-## is already taken care of in the covars.om
-#---------------------------------#
-
-MizerGrowth <- function(biols, SRs, fleets, year, season, covars, ...) {
-  
-  yr <- year
-  
-  ni <- dim(biols[[1]]@n)[6] ## number iterations
-  
-  for(i in 1:ni) {
-    
-    for(st in names(biols)) {
-      
-      ## Update numbers following Fs and Ms in mizer
-      #biols[[st]]@n[,yr,,,,i] <- biols[[st]]@n[,yr-1,,,,i] * 
-      #  (1-exp(-(covars$mizer[[i]]$age_stuff$Fs[yr,st,] + 
-      #          covars$mizer[[i]]$age_stuff$Ms[yr,st,])))
-      # case of first year
-      if(length(dim(covars$mizer[[1]]$age_stuff$num_at_age))==3) {
-        biols[[st]]@n[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$num_at_age[yr-1,st,]/1e3 ## in 000s
-        ## weights, Ms and maturity
-        biols[[st]]@wt[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$mean_waa[yr,st,]/1e3 ## in kg
-        biols[[st]]@m[,yr,,,,i]       <- covars$mizer[[i]]$age_stuff$Ms[yr,st,]
-        biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer[[i]]$age_stuff$prop_mat[yr,st,] } else {
-          
-          # case of subsequent years``:w
-          
-          biols[[st]]@n[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$num_at_age[st,]/1e3 ## in 000s
-          ## weights, Ms and maturity
-          biols[[st]]@wt[,yr,,,,i]      <- covars$mizer[[i]]$age_stuff$mean_waa[st,]/1e3 ## in kg
-          biols[[st]]@m[,yr,,,,i]       <- covars$mizer[[i]]$age_stuff$Ms[st,]
-          biols[[st]]@mat$mat[,yr,,,,i] <- covars$mizer[[i]]$age_stuff$prop_mat[st,]   
-          
-        }
-      
-      ## Can't have zeros in numbers so add a small value
-      biols[[st]]@n[,yr,,,,i][is.na(biols[[st]]@n[,yr,,,,i])]   <- 10 ## 10,000 fish
-      biols[[st]]@n[,yr,,,,i][biols[[st]]@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
-      biols[[st]]@wt[,yr,,,,i][is.na(biols[[st]]@wt[,yr,,,,i])] <- 0
-      biols[[st]]@m[,yr,,,,i][is.na(biols[[st]]@m[,yr,,,,i])]   <- 0
-      
-    }
-    
-  }
-  
-  return(list(biols = biols))
-  
-}
 
 ##################
 ####
