@@ -1332,6 +1332,7 @@ runMizer <- function(biols = biols, fleets = fleets, covars = covars, year = yea
   print("Running mizer forwards")
   
   yr <- year
+  yr_mizer <- length(covars.ctrl$mizer$first.year:as.numeric(dimnames(biols[[1]]@n)$year[1])) + yr # correct ref year for mizer
   ni <- dim(biols[[1]]@n)[6]
   
   ## First get the Fs from the catches, numbers-at-age and Ms
@@ -1365,10 +1366,10 @@ runMizer <- function(biols = biols, fleets = fleets, covars = covars, year = yea
   }) 
   
   covars$mizer <- lapply(1:ni, function(m) {
-    progress_one_year(year=yr,effort=F_mizer[[m]],prev_run=mizer[[m]])
+    progress_one_year(year=yr_mizer,effort=F_mizer[[m]],prev_run=mizer[[m]]) ## Need to fix year, is different reference, i.e. 37 is 2020
   })
   
-  return(covars)
+  return(list(covars = covars, fleets = fleets, biols = biols, SRs = SRs))
   
 }
 
