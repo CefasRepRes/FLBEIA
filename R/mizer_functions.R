@@ -1031,7 +1031,7 @@ cond_biols_mizer <- function(name_list, mizer, spin_up = 50, reduce_ages = FALSE
     mat  <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
     fs   <- FLQuant(dimnames=list(year = yrs, age = ages, iter = seq_len(length(mizer))))
     for(i in 1:length(mizer)) {
-      n[,,,,,i]   <- t(mizer[[i]]$age_stuff$num_at_age[as.character(as.numeric(yrs)+1),names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
+      n[,,,,,i]   <- t(mizer[[i]]$age_stuff$num_at_age[as.character(as.numeric(yrs)-1),names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
       m[,,,,,i]   <- t(mizer[[i]]$age_stuff$Ms[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
       wt[,,,,,i]  <- t(mizer[[i]]$age_stuff$mean_waa[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
       mat[,,,,,i] <- t(mizer[[i]]$age_stuff$prop_mat[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
@@ -1425,6 +1425,110 @@ runMizer <- function(biols = biols, fleets = fleets, covars = covars, year = yea
 ## This will update the biols
 ## with the mizer outputs
 #######################
+
+
+
+#-------------------------------------------------------------------------------
+# perfectObs(biol, fleets, covars, obs.ctrl, year = 1, season = 1)
+#-------------------------------------------------------------------------------
+perfectObsMizer <- function(biol, fleets, covars, obs.ctrl, year = 1, season = NULL, ...){
+  
+  # THE ASSESSMENT IS BEING CARRIED OUT IN <year> => THE 'OBSERVATION' GOES UP TO <year-1>
+  
+  st <- biol@name
+  na <- dim(biol@n)[1]
+  ns <- dim(biol@n)[4]
+  it <- dim(biol@n)[6]
+  ss <- ifelse(is.null(season), dim(biol@n)[4], season)
+  
+  if ( year > dims(biol)$year) biol <- window( biol, start=dims(biol)$minyear, end=dims(biol)$maxyear+1)
+  
+  # FIRST SEASON, FIRST UNIT:
+  # biol@wt = "stock.wt" = "catch.wt" = "discards.wt" = "landings.wt" = "mat" = "harvest.spwn" = "m.spwn
+  res <- propagate(as(biol, 'FLStock')[,1:(year-1),1,1], it, fill.iter = TRUE)
+  res@range <- res@range[1:7]
+  
+  dimnames(res) <- list(unit="unique")
+  
+  #res@range[c(1:3,6:7)] <- biol@range[c(1:3,6:7)]
+  #names(res@range[6:7]) <- c('minfbar', 'maxfbar')
+  
+  res@discards.wt[] <- wtadStock(fleets,st)[,1:(year-1),1,1]
+  res@landings.wt[] <- wtalStock(fleets,st)[,1:(year-1),1,1]
+  res@catch.wt[] <-  (res@landings.wt*landStock(fleets,st)[,1:(year-1),1,1] + res@discards.wt*discStock(fleets,st)[,1:(year-1),1,1])/catchStock(fleets,st)[,1:(year-1),1,1]
+  
+  # "stock.n":  FIRST SEASON and SUM ALONG UNITS except recruitment
+  # rec = n[1,,1,1] + n[1,,2,2] + n[1,,3,3] + n[1,,4,4]
+  # n up to (year) to use it after in the 'f' calculation.
+  n <- unitSums(biol@n)[,1:year,,1]
+  
+  if(dim(biol@n)[3] > 1){
+    for(u in 2:dim(biol@n)[3])
+      n[1,] <- n[1,] + biol@n[1,1:year,u,u]
+  } else {
+    for (s in c(1:ns)) { 
+      n[1,1:(year-1),] <- biol@n[1,1:(year-1),1,s,]
+      if( sum( n[1,1:(year-1),] != 0, na.rm = T) > 0) break # spawning season
+    }  
+  }
+  # for current year if season before recruitment season:
+  if (ss != ns)
+    n[1,1:(year-1),] <- ifelse( is.na(n[1,1:(year-1),]), 0, n[1,1:(year-1),])
+  
+  n[n == 0] <- 1e-6   # if n == 0 replace it by a small number to avoid 'Inf' in harvest.
+  
+  stock.n(res) <- n[,1:(year-1)]
+  
+  stock(res) <- quantSums(res@stock.n*res@stock.wt)
+  
+  # SUM ALONG SEASONS AND FIRST UNIT: "m"
+  m(res)[]      <- seasonSums(biol@m)[,1:(year-1),1,]
+  m.spwn(res)[] <- seasonSums(spwn(biol))[,1:(year-1),1,]/ns
+  if (ss < ns){ # sum only along s<=ss for last year
+    m(res)[,year-1,]      <- seasonSums(biol@m[,year-1,1,1:ss,])
+    m.spwn(res)[,year-1,] <- seasonSums(spwn(biol)[,year-1,1,1:ss])/length(1:ss)
+  }
+  
+  # SUM ALONG UNITS AND SEASONS, OBTAINED FROM FLFLEETS: 
+  # "catch", "catch.n", "discards"     "discards.n" "landings"     "landings.n"
+  land.n <- apply(landStock(fleets, st), c(1:2,6),sum)[,1:(year-1),]
+  disc.n <- apply(discStock(fleets, st), c(1:2,6),sum)[,1:(year-1),]
+  dimnames(land.n)[1:5] <- dimnames(disc.n)[1:5] <- dimnames(landings.n(res))[1:5]
+  landings.n(res) <- land.n
+  discards.n(res) <- disc.n
+  catch.n(res)    <- res@discards.n + res@landings.n
+  landings(res)   <- quantSums(res@landings.n*res@landings.wt)
+  discards(res)   <- quantSums(res@discards.n*res@discards.wt)
+  catch(res)      <- res@landings + res@discards
+  
+  # If catch.n = 0 => catch.wt = NaN in the previous line => we set it equ
+  catch.wt(res)[catch.n(res) == 0] <- (landings.wt(res)[landings.n(res) == 0] + landings.wt(res)[landings.n(res) == 0])/2
+  
+  # harvest: * if age structured calculate it from 'n'.
+  #          * if biomass dyn => assume C = q*E*B => C = F*B and F = C/B.
+  if(na == 1){
+    harvest(res)[] <- (res@catch)/(res@stock.n*res@stock.wt) 
+    units(res@harvest) <- 'hr'
+  } else{
+    harvest(res) <- FLash:::calcF(m = m(biol), catch = catchStock(fleets, st), n = n(biol)) # PJD - use inbuilt function
+    units(res@harvest) <- 'f'
+    
+    # for current year if season before recruitment season:
+    if (ss != ns)
+      res@harvest[1,year-1,] <- ifelse( is.na(res@harvest[1,year-1,]), 0, res@harvest[1,year-1,])
+    
+    ctot.age <- apply(landStock(fleets, st), c(1:2,4,6),sum)[,1:(year-1),] + apply(discStock(fleets, st), c(1:2,4,6),sum)[,1:(year-1),]
+    ctot     <- seasonSums(ctot.age)
+    c.perc <- ctot.age * NA
+    for (s in c(1:ns)) c.perc[, , , s, ] <- ifelse(ctot==0,0, ctot.age[, , , s, ]/ctot)
+    biol.spwn <- unitMeans(spwn(biol)[,1:(year-1),,])
+    harvest.spwn(res)[] <- seasonSums(c.perc[,1:(year-1),,]*biol.spwn)
+    
+  }
+  
+  # If catc
+  return(res)
+}
 
 
 
