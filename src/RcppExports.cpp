@@ -25,14 +25,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // condition_flcatches
-List condition_flcatches(List fl, NumericVector SLwt, NumericVector SDwt, NumericVector B, CharacterVector st, IntegerVector mean_yrs_q, IntegerVector mean_yrs_wts, IntegerVector mean_yrs_sel, IntegerVector sim_yrs, bool LO, bool UseCWt4Discards);
-RcppExport SEXP _FLBEIA_condition_flcatches(SEXP flSEXP, SEXP SLwtSEXP, SEXP SDwtSEXP, SEXP BSEXP, SEXP stSEXP, SEXP mean_yrs_qSEXP, SEXP mean_yrs_wtsSEXP, SEXP mean_yrs_selSEXP, SEXP sim_yrsSEXP, SEXP LOSEXP, SEXP UseCWt4DiscardsSEXP) {
+List condition_flcatches(List fl, NumericVector B, CharacterVector st, IntegerVector mean_yrs_q, IntegerVector mean_yrs_wts, IntegerVector mean_yrs_sel, IntegerVector sim_yrs, bool LO, bool UseCWt4Discards);
+RcppExport SEXP _FLBEIA_condition_flcatches(SEXP flSEXP, SEXP BSEXP, SEXP stSEXP, SEXP mean_yrs_qSEXP, SEXP mean_yrs_wtsSEXP, SEXP mean_yrs_selSEXP, SEXP sim_yrsSEXP, SEXP LOSEXP, SEXP UseCWt4DiscardsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< List >::type fl(flSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type SLwt(SLwtSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type SDwt(SDwtSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type B(BSEXP);
     Rcpp::traits::input_parameter< CharacterVector >::type st(stSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type mean_yrs_q(mean_yrs_qSEXP);
@@ -41,7 +39,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type sim_yrs(sim_yrsSEXP);
     Rcpp::traits::input_parameter< bool >::type LO(LOSEXP);
     Rcpp::traits::input_parameter< bool >::type UseCWt4Discards(UseCWt4DiscardsSEXP);
-    rcpp_result_gen = Rcpp::wrap(condition_flcatches(fl, SLwt, SDwt, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards));
+    rcpp_result_gen = Rcpp::wrap(condition_flcatches(fl, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -65,7 +63,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_FLBEIA_condition_fleet_effort", (DL_FUNC) &_FLBEIA_condition_fleet_effort, 4},
-    {"_FLBEIA_condition_flcatches", (DL_FUNC) &_FLBEIA_condition_flcatches, 11},
+    {"_FLBEIA_condition_flcatches", (DL_FUNC) &_FLBEIA_condition_flcatches, 9},
     {"_FLBEIA_inner_project_loop", (DL_FUNC) &_FLBEIA_inner_project_loop, 7},
     {NULL, NULL, 0}
 };

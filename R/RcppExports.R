@@ -5,8 +5,8 @@ condition_fleet_effort <- function(fl, dim, sim_yrs, mean_yrs) {
     .Call('_FLBEIA_condition_fleet_effort', PACKAGE = 'FLBEIA', fl, dim, sim_yrs, mean_yrs)
 }
 
-condition_flcatches <- function(fl, SLwt, SDwt, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards) {
-    .Call('_FLBEIA_condition_flcatches', PACKAGE = 'FLBEIA', fl, SLwt, SDwt, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards)
+condition_flcatches <- function(fl, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards) {
+    .Call('_FLBEIA_condition_flcatches', PACKAGE = 'FLBEIA', fl, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards)
 }
 
 inner_project_loop <- function(no_sp, no_w, n, A, B, S, w_min_idx) {
