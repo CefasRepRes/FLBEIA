@@ -94,6 +94,7 @@ export(
 # "initPop_lifeHist",
 "inner_project_loop",
   "IcesHCR",
+  "IcesHCRmizer",
   "joinIter",
   "L_flbeia",
   "landStock",

@@ -1281,8 +1281,9 @@ mizerGrowth <- function(biols, SRs, fleets, year, season, stknm, covars, ...) {
   biol <- biols[[stknm]]  
   SR   <- SRs[[stknm]] ## not really needed
   yr <- year
-  yr_mizer <- length(covars.ctrl$mizer$first.year:as.numeric(dimnames(biols[[1]]@n)$year[1])) + yr # correct ref year for mizer
-  
+
+  ## Record the mizer Fs
+  #if(covars)
   
   ni <- dim(biols[[1]]@n)[6] ## number iterations
   
@@ -1298,13 +1299,13 @@ mizerGrowth <- function(biols, SRs, fleets, year, season, stknm, covars, ...) {
       if(length(dim(covars$mizer[[1]]$age_stuff$num_at_age))==3) {
         
         ## Numbers
-        Ns <-  covars$mizer[[i]]$age_stuff$num_at_age[yr_mizer-1,stk,]/1e3 ## mizer is end year, so take end previous year. in 000s
+        Ns <-  covars$mizer[[i]]$age_stuff$num_at_age[nrow(covars$mizer[[i]]$age_stuff$num_at_age),stk,]/1e3 ## mizer is end year, so take end previous year. in 000s
         ## mean weight
-        Wts <- covars$mizer[[i]]$age_stuff$mean_waa[yr_mizer,stk,]/1e3 ## in kg
+        Wts <- covars$mizer[[i]]$age_stuff$mean_waa[nrow(covars$mizer[[i]]$age_stuff$num_at_age),stk,]/1e3 ## in kg
         ## natural mortality
-        Ms <-  covars$mizer[[i]]$age_stuff$Ms[yr_mizer,stk,]
+        Ms <-  covars$mizer[[i]]$age_stuff$Ms[nrow(covars$mizer[[i]]$age_stuff$num_at_age),stk,]
         ## maturity
-        Mat <- covars$mizer[[i]]$age_stuff$prop_mat[yr_mizer,stk,]
+        Mat <- covars$mizer[[i]]$age_stuff$prop_mat[nrow(covars$mizer[[i]]$age_stuff$num_at_age),stk,]
         
           } else {
           
@@ -1352,19 +1353,29 @@ mizerGrowth <- function(biols, SRs, fleets, year, season, stknm, covars, ...) {
       biol@mat$mat[,yr,,,,i] <- Mat
       
       ## Can't have zeros in numbers so add a small value
-      biol@n[,yr,,,,i][is.na(biol@n[,yr,,,,i])]   <- 10 ## 10,000 fish
-      biol@n[,yr,,,,i][biol@n[,yr,,,,i]==0]       <- 10 ## 10,000 fish
-      biol@wt[,yr,,,,i][is.na(biol@wt[,yr,,,,i])] <- 0
-      biol@m[,yr,,,,i][is.na(biol@m[,yr,,,,i])]   <- 0
-      
-    }
+      biol@n[,yr,,,,i][is.na(biol@n[,yr,,,,i])]     <- 10 ## 10,000 fish
+      biol@n[,yr,,,,i][biol@n[,yr,,,,i]==0]         <- 10 ## 10,000 fish
+      biol@wt[,yr,,,,i][is.na(biol@wt[,yr,,,,i])]   <- 0
+      biol@m[,yr,,,,i][is.na(biol@m[,yr,,,,i])]     <- 0
+      biol@mat$mat[,yr,,,,i][is.na(biol@mat$mat[,yr,,,,i])] <- 0
     
+    }
   }
+    ss <- season
+    # Update SSB.
+    SR@ssb[,yr,,ss] <- unitSums(quantSums(n(biol) * wt(biol) * fec(biol)*mat(biol) * 
+                                            exp(-biol@m*spwn(biol)), na.rm=TRUE))[,yr,,ss]
+    # RECRUITMENT
+   # dim(biol@n)[3] = 1, The recruitment only occurs in 1 season every year. 
+ #   SR <- SRsim(SR, year = yr, season = ss, iter = 'all') 
+    SR@rec[,yr,,ss] <- biol@n[1,yr,,ss]
+      
   
   return(list(biol = biol, SR = SR))
   
-}
 
+
+}
 
 ##########################
 ## Run Mizer
@@ -1376,8 +1387,10 @@ runMizer <- function(biols = biols, fleets = fleets, covars = covars, year = yea
   
   print("Running mizer forwards")
   
+  mizer <- covars$mizer
+  
   yr <- year
-  yr_mizer <- length(covars.ctrl$mizer$first.year:as.numeric(dimnames(biols[[1]]@n)$year[1])) + yr # correct ref year for mizer
+  yr_mizer <- length(covars.ctrl$mizer$first.year:as.numeric(dimnames(biols[[1]]@n)$year[1]))-1 + yr # correct ref year for mizer
   ni <- dim(biols[[1]]@n)[6]
   
   ## First get the Fs from the catches, numbers-at-age and Ms
@@ -1510,8 +1523,15 @@ perfectObsMizer <- function(biol, fleets, covars, obs.ctrl, year = 1, season = N
     harvest(res)[] <- (res@catch)/(res@stock.n*res@stock.wt) 
     units(res@harvest) <- 'hr'
   } else{
-    harvest(res) <- FLash:::calcF(m = m(biol), catch = catchStock(fleets, st), n = n(biol)) # PJD - use inbuilt function
-    units(res@harvest) <- 'f'
+    #harvest(res) <- FLash:::calcF(m = m(biol), catch = catchStock(fleets, st), n = n(biol)) # PJD - use inbuilt function
+    #units(res@harvest) <- 'f'
+    
+    ## Extract Fs from mizer
+    #if(is.null)
+    
+    #for(i in 1:it){
+      
+    #}
     
     # for current year if season before recruitment season:
     if (ss != ns)
