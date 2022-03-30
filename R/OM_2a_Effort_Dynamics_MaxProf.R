@@ -630,7 +630,7 @@ f_MP_nloptr_penalized <- function(X, efs.min, efs.max, q.m, alpha.m, beta.m, pr.
       }
       
     }
-    pen_OverShoot <- sum(resTAC[stocks.restr]) # only the overshoot of the TAC of some stocks penalizes the function.
+    pen_OverShoot <- sum(resTAC[stocks.restr])^3 # only the overshoot of the TAC of some stocks penalizes the function.
   }
   
   if(!(effort.restr %in% c('none', 'min'))){
@@ -651,7 +651,7 @@ f_MP_nloptr_penalized <- function(X, efs.min, efs.max, q.m, alpha.m, beta.m, pr.
     # resTAC[st] <- 1e7*sum(1/(1+2^((-Cr.f[stk.cnst]+sum(Cm))/0.00005))) This penalty works properly only if the multiplier is in the scale of the profits.
     resTAC[stk.cnst] <- log(sum(Cm)/(Cr.f[stk.cnst,]-sum(Cm)))
     
-    pen_OverShoot <- resTAC[stk.cnst]
+    pen_OverShoot <- (resTAC[stk.cnst])^3
   }
   
   # cat('-----------------------------------------\n')
