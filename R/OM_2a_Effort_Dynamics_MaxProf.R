@@ -68,7 +68,6 @@ MaxProfit <- function(fleets,
   # prepare matrix for metier effort-share optimisation results
   efs.res <-  matrix(NA,nmt,it,dimnames = list(mtnms, dimnms$iter))
   
-  
   # Check fleets.ctrl elements.
   # This checks the restriction for all the fleets and we only need to check the fleet we are proyecting.
   #   if(! all(sapply(names(fleets), function(x) fleets.ctrl[[x]]$restriction %in% c('catch', 'landings'))))
@@ -103,6 +102,10 @@ MaxProfit <- function(fleets,
   #   cat(paste("warning: fleets.ctrl[['",flnm,"']][['stocks.restr']]==NA, then 
   #   effort is restricted by capacity and not by any of the stocks.\n", sep=""))
   
+  ## CHECK progress
+  cat("effort.restr: ",effort.restr,"\n")
+  cat("restriction: ", restriction,"\n")
+  cat("stocks.restr: ",stocks.restr,"\n")
   
   for(i in dimnms$iter){
     
@@ -116,11 +119,20 @@ MaxProfit <- function(fleets,
     adv.ss <- setNames( rep(NA,nst), stnms)
     for (st in stnms) adv.ss[st] <- ifelse(is.null(advice.ctrl[[st]][["adv.season"]]), ns, advice.ctrl[[st]][["adv.season"]]) # [nst]
     
+    ## Catch bugs when the iteration name does not match the number of iterations available
+    if(as.numeric(i) > dims(biols[[1]]@n)$iter) {
+      stop(paste0("Check biols dimnames vector for iter: ",
+                  "iteration name is larger than available iterations: ",
+                  "i = ",i," ; dims = ", dims(biols[[1]]@n)$iter))
+    }
+    
     # Transform the FLR objects into list of arrays in order to be able to work with non-FLR
     list2env(FLObjs2S3_fleetSTD(biols = biols, fleets = fleets, advice = advice, covars = covars, 
                                 biols.ctrl = biols.ctrl, fleets.ctrl = fleets.ctrl, BDs=BDs, 
                                 flnm = flnm, yr = yr, ss = ss, iters = i, adv.ss = adv.ss), environment())
     
+    ## TEST
+    # cat("INIT efs.m: ", efs.m,"\n")
     
     # Correction of efs.m when no TAC for main target species
     if(!is.null(fleets.ctrl[[flnm]]$q2zero)){ 
@@ -132,6 +144,9 @@ MaxProfit <- function(fleets,
         }
       if(fleets.ctrl[[flnm]]$efs.abs == FALSE) efs.m <- efs.m/sum(efs.m)
     }
+    
+    ## TEST
+    # cat("FINAL efs.m: ", efs.m,"\n")
     
     # Calculate the initial point based on the effort that correspond with the TAC quotas.
     effs <- numeric(length(q.m))
@@ -150,11 +165,14 @@ MaxProfit <- function(fleets,
     # (e.g. CobbDouglassAge.effort) for the stock. Evaluate the function to 
     # calculate the effort for each stock
     
+    ## PRINT Fleet advised catches per stock
+    print(Cr.f) # This is stock TAC * fleet quotashare
+    
     for(st in names(q.m)){
       
       ## define effort function
       effort.fun <- paste(fleets.ctrl[[flnm]][[st]][['catch.model']], 'effort', sep = '.')
-
+      
       ## Run effort model for each stock
       effs[st] <-  eval(call(effort.fun, Cr = Cr.f,  N = N, q.m = q.m, rho = rho, efs.m = efs.m, 
                                 alpha.m = alpha.m, beta.m = beta.m, ret.m = ret.m, wl.m = wl.m, wd.m = wd.m,stknm=st,
@@ -162,6 +180,9 @@ MaxProfit <- function(fleets,
                                 tac=TAC[st,i, drop=F], Cyr_1 = Cyr_1, Nyr_1 = Nyr_1, Myr_1 = Myr_1,  M = M, Cfyr_1 = Cfyr_1))
       
     }
+    
+    ## CHECK progress - print efforts
+    # cat("Initial metier efforts: ", effs, "\n")
     
     ## Sum the catchabilities across ages and metiers for each stock
     ## this is used in the next step to define the limiting effort
@@ -208,6 +229,11 @@ MaxProfit <- function(fleets,
     #  if(fleets.ctrl[[flnm]]$efs.abs == FALSE){
     # If efs.min == 0 or Cr.f == 0 or E0 == 0 set them equal to 1e-8 to avoid having indeterminations in the penalties
     E0 <- Et*efs.m
+    
+    ## TEST
+    # cat("Et: ", Et,"\n")
+    # cat("v1 efs.m: ", efs.m,"\n")
+    # cat("v1 E0: ", E0,"\n")
     
     efs.min <- ifelse(efs.min == 0, 1e-8, efs.min)
     E0      <- ifelse(E0 == 0, 1e-8, E0)
@@ -630,7 +656,7 @@ f_MP_nloptr_penalized <- function(X, efs.min, efs.max, q.m, alpha.m, beta.m, pr.
       }
       
     }
-    pen_OverShoot <- sum(resTAC[stocks.restr])^3 # only the overshoot of the TAC of some stocks penalizes the function.
+    pen_OverShoot <- sum(resTAC[stocks.restr]) # only the overshoot of the TAC of some stocks penalizes the function.
   }
   
   if(!(effort.restr %in% c('none', 'min'))){
@@ -651,7 +677,7 @@ f_MP_nloptr_penalized <- function(X, efs.min, efs.max, q.m, alpha.m, beta.m, pr.
     # resTAC[st] <- 1e7*sum(1/(1+2^((-Cr.f[stk.cnst]+sum(Cm))/0.00005))) This penalty works properly only if the multiplier is in the scale of the profits.
     resTAC[stk.cnst] <- log(sum(Cm)/(Cr.f[stk.cnst,]-sum(Cm)))
     
-    pen_OverShoot <- (resTAC[stk.cnst])^3
+    pen_OverShoot <- (resTAC[stk.cnst])
   }
   
   # cat('-----------------------------------------\n')

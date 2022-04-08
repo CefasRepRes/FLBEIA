@@ -39,11 +39,11 @@ fleets.om <- function(fleets, biols, BDs, covars, advice, biols.ctrl, fleets.ctr
         
         if (!is.null(fleets.ctrl[[fl]]$q2zero)) 
           fleets <- catchability2zero(fleets = fleets, flnm = fl, advice = advice, fleets.ctrl = fleets.ctrl, year = year)
-             
+
         res <- eval(call(dyn.model, biols = biols, fleets = fleets, BDs = BDs, flnm = fl, advice = advice,
                     year = year, season = season, biols.ctrl=biols.ctrl, fleets.ctrl = fleets.ctrl, covars = covars, 
                     assess.ctrl=assess.ctrl, advice.ctrl = advice.ctrl)) 
-         
+
         fleets[[fl]]         <- res$fleets[[fl]]
         fleets.ctrl.aux[[fl]] <- res$fleets.ctrl[[fl]]
         remove(res)
