@@ -61,7 +61,7 @@ IcesHCRmizer <- function(stocks, advice, advice.ctrl, year, stknm,...){
            mizer_i <- FLBEIA:::progress_one_year(year=yr_mizer,effort=F_mat,prev_run=mizer_i) ## Need to fix year, is different reference, i.e. 37 is 2020
            
            ## Find the SSB from all the stocks as we need the F target for all the stocks
-           b.datyr <- apply(mizer_i$age_stuff$cat_num_at_age * mizer_i$age_stuff$mean_waa * mizer_i$age_stuff$prop_mat,1,sum,na.rm = TRUE)/1e6 ## in tonnes
+           b.datyr <- apply(mizer_i$age_stuff$num_at_age * mizer_i$age_stuff$mean_swaa * mizer_i$age_stuff$prop_mat,1,sum,na.rm = TRUE)/1e6 ## in tonnes
             
             # Find where the SSB (Age structured) OR Biomass (Aggregated) in relation to reference points.
             b.pos <- sapply(names(b.datyr), function(x) findInterval(b.datyr[[x]], Brefs[,x]))
