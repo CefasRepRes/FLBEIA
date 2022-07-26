@@ -19,7 +19,14 @@
 #' @aliases IcesHCR
 IcesHCRmizer <- function(stocks, advice, advice.ctrl, year, stknm,...){
 
-   
+	
+  ## Bit of a hack, but want to avoid running mizer for every stock
+  if(!all(is.na(advice[['TAC']][stknm,year+1,,,,]))) {
+  print("The target TAC has already been computed within the multi-species mizer framework")
+  }
+
+  if(all(is.na(advice[['TAC']][stknm,year+1,,,,]))) {
+
   Cadv <- ifelse(advice.ctrl[[stknm]][['AdvCatch']][year+1] == TRUE, 'catch', 'landings')
   
     stk <- stocks[[stknm]]
@@ -83,12 +90,18 @@ IcesHCRmizer <- function(stocks, advice, advice.ctrl, year, stknm,...){
               }
             
             mizer_ii <- FLBEIA:::progress_one_year(year=yr_mizer+1,effort=F_mat,prev_run=mizer_i)
-            
-            yy <- sum(mizer_ii$age_stuff$cat_bio_at_age[stknm,])/1e6 ## in tonnes
+           
+            for(st in names(stocks)) {  ## Bit of a hack, but want to avoid running mizer for every stock
+
+            yy <- sum(mizer_ii$age_stuff$cat_bio_at_age[st,])/1e6 ## in tonnes
      
-        advice[['TAC']][stknm,year+1,,,,i] <- yy # The TAC is given in terms of CATCH.
+        advice[['TAC']][st,year+1,,,,i] <- yy # The TAC is given in terms of CATCH.
+
+	    }
 
     }
+
+  }
     return(advice)
 }
 
