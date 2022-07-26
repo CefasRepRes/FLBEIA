@@ -573,6 +573,56 @@ get_numbers_at_age <- function(input,max_ages=(dim(input[[2]])[3]-1),mature=F){
   return(ret)
 }
 
+##########
+####
+##########
+
+getWeight <- function (sim){
+  numbers <- sweep(sim@n, 3, sim@params@w * sim@params@dw, 
+                   "*")
+  return(numbers)
+}
+
+##########
+####
+##########
+
+getWeight_mat <- function (sim){
+  numbers <- sweep(sweep(sim@n, c(2, 3), sim@params@maturity, 
+                         "*"), 3, sim@params@w * sim@params@dw, "*") 
+  return(numbers)
+}
+
+##########
+####
+##########
+
+get_weight_at_age <- function(input,max_ages=(dim(input[[2]])[3]-1),mature=F){
+  sim <- input$sim
+  waa <- input$waa
+  years <- dim(waa)[1]
+  nspec <- nrow(sim@params@species_params)
+  ret <- array(0,dim=c(years,nspec,max_ages+2),dimnames = list(rownames(sim@n),colnames(sim@n),c(0:max_ages,"plus")))
+  tmp <- rep(0,max_ages+2)
+  if (mature==T){
+    weight_at_age <- getWeight_mat(sim)
+  }
+  else{
+    weight_at_age <- getWeight(sim)
+  }
+  for(i in 1:years){
+    for(j in 1:nspec){
+      for(k in 1:(max_ages+1)){
+        tmp[k] <- sum(weight_at_age[i,j,which(sim@params@w < waa[i,j,k])])
+      }
+      tmp[max_ages+2] <- sum(weight_at_age[i,j,]) ## plus group
+      ret[i,j,1] <- tmp[1]
+      ret[i,j,-1] <- diff(tmp)
+    }
+  }
+  return(ret)
+}
+
 ###########
 ##
 ###########
@@ -922,6 +972,22 @@ run_to_2019 <- function(theta,inter, dyn_kappa,NS_species,selectivity,catchabili
 ## get rates and stuff
 #######
 
+
+## old - doesn't include stock weight
+#get_transfer <- function(mod){
+#  num_at_age <- get_numbers_at_age(mod)
+#  end_of_year <- num_at_age[round(as.numeric(dimnames(num_at_age)[[1]]))==(as.numeric(dimnames(num_at_age)[[1]])),,] ## numbers at age at end of year
+#  num_at_age_m <- get_numbers_at_age(mod,mature=T)
+#  end_of_year_m <- num_at_age_m[round(as.numeric(dimnames(num_at_age_m)[[1]]))==(as.numeric(dimnames(num_at_age_m)[[1]])),,]
+#  mort_by_age <- getMortbyAge(mod)
+#  break_mort <- lapply(mort_by_age,getAnnualRate)
+#  cat_num_aa <- get_catch_at_age(mod,t_save=0.1) ## in numbers
+#  cat_bio_aa <- get_catch_at_age(mod,t_save=0.1,biomass=T) ## in grams
+#  an_cat_num_aa <-getAnnualsum(cat_num_aa) ## in numbers
+#  an_cat_bio_aa <-getAnnualsum(cat_bio_aa) ## in grams
+#  return(list(num_at_age=end_of_year[-1,,],Ms=break_mort$Ms[-1,,],Fs=break_mort$Fs[-1,,],cat_bio_at_age=an_cat_bio_aa[-1,,],cat_num_at_age=an_cat_num_aa[-1,,],mean_waa=an_cat_bio_aa[-1,,]/an_cat_num_aa[-1,,],prop_mat=end_of_year_m[-1,,]/end_of_year[-1,,]))
+#}
+
 get_transfer <- function(mod){
   num_at_age <- get_numbers_at_age(mod)
   end_of_year <- num_at_age[round(as.numeric(dimnames(num_at_age)[[1]]))==(as.numeric(dimnames(num_at_age)[[1]])),,] ## numbers at age at end of year
@@ -933,8 +999,15 @@ get_transfer <- function(mod){
   cat_bio_aa <- get_catch_at_age(mod,t_save=0.1,biomass=T) ## in grams
   an_cat_num_aa <-getAnnualsum(cat_num_aa) ## in numbers
   an_cat_bio_aa <-getAnnualsum(cat_bio_aa) ## in grams
-  return(list(num_at_age=end_of_year[-1,,],Ms=break_mort$Ms[-1,,],Fs=break_mort$Fs[-1,,],cat_bio_at_age=an_cat_bio_aa[-1,,],cat_num_at_age=an_cat_num_aa[-1,,],mean_waa=an_cat_bio_aa[-1,,]/an_cat_num_aa[-1,,],prop_mat=end_of_year_m[-1,,]/end_of_year[-1,,]))
+  
+  
+  weight_at_age <- get_weight_at_age(mod)
+  weight_end_of_year <- weight_at_age[round(as.numeric(dimnames(num_at_age)[[1]]))==(as.numeric(dimnames(num_at_age)[[1]])),,]
+  
+  
+  return(list(num_at_age=end_of_year[-1,,],Ms=break_mort$Ms[-1,,],Fs=break_mort$Fs[-1,,],cat_bio_at_age=an_cat_bio_aa[-1,,],cat_num_at_age=an_cat_num_aa[-1,,],mean_cwaa=an_cat_bio_aa[-1,,]/an_cat_num_aa[-1,,],prop_mat=end_of_year_m[-1,,]/end_of_year[-1,,],mean_swaa = weight_end_of_year[-1,,]/end_of_year[-1,,]))
 }
+
 
 ###########
 ###
@@ -1033,7 +1106,7 @@ cond_biols_mizer <- function(name_list, mizer, spin_up = 50, reduce_ages = FALSE
     for(i in 1:length(mizer)) {
       n[,,,,,i]   <- t(mizer[[i]]$age_stuff$num_at_age[as.character(as.numeric(yrs)-1),names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
       m[,,,,,i]   <- t(mizer[[i]]$age_stuff$Ms[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
-      wt[,,,,,i]  <- t(mizer[[i]]$age_stuff$mean_waa[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
+      wt[,,,,,i]  <- t(mizer[[i]]$age_stuff$mean_swaa[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])/1e3
       mat[,,,,,i] <- t(mizer[[i]]$age_stuff$prop_mat[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
       fs[,,,,,i]  <- t(mizer[[i]]$age_stuff$Fs[yrs,names(name_list[st]),c(ages[-length(ages)],"plus")])
       spwn[]     <- 0 # ?correct
@@ -1215,8 +1288,8 @@ create_mizer_fleets <- function(fleets, mizer, name_list, reduce_ages = FALSE) {
             discards.n[,,,,,i]   <- caa * dsa
             landings.sel[,,,,,i] <- lsa
             discards.sel[,,,,,i] <- dsa
-            landings.wt[,,,,,i]  <- t(mizer[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in kg
-            discards.wt[,,,,,i] <- t(mizer[[i]]$age_stuff$mean_waa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3
+            landings.wt[,,,,,i]  <- t(mizer[[i]]$age_stuff$mean_cwaa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3 ## in kg
+            discards.wt[,,,,,i] <- t(mizer[[i]]$age_stuff$mean_cwaa[yrs,stk.name,c(ages[-length(ages)],"plus")])/1e3
           }
           alpha[] <- 1
           beta[] <- 1
@@ -1301,7 +1374,7 @@ mizerGrowth <- function(biols, SRs, fleets, year, season, stknm, covars, ...) {
         ## Numbers
         Ns <-  covars$mizer[[i]]$age_stuff$num_at_age[nrow(covars$mizer[[i]]$age_stuff$num_at_age),stk,]/1e3 ## mizer is end year, so take end previous year. in 000s
         ## mean weight
-        Wts <- covars$mizer[[i]]$age_stuff$mean_waa[nrow(covars$mizer[[i]]$age_stuff$num_at_age),stk,]/1e3 ## in kg
+        Wts <- covars$mizer[[i]]$age_stuff$mean_swaa[nrow(covars$mizer[[i]]$age_stuff$num_at_age),stk,]/1e3 ## in kg
         ## natural mortality
         Ms <-  covars$mizer[[i]]$age_stuff$Ms[nrow(covars$mizer[[i]]$age_stuff$num_at_age),stk,]
         ## maturity
@@ -1314,7 +1387,7 @@ mizerGrowth <- function(biols, SRs, fleets, year, season, stknm, covars, ...) {
             ## Numbers
             Ns <-  covars$mizer[[i]]$age_stuff$num_at_age[stk,]/1e3 ## Already previous year. in 000s
             ## mean weight
-            Wts <- covars$mizer[[i]]$age_stuff$mean_waa[stk,]/1e3 ## in kg
+            Wts <- covars$mizer[[i]]$age_stuff$mean_swaa[stk,]/1e3 ## in kg
             ## natural mortality
             Ms <-  covars$mizer[[i]]$age_stuff$Ms[stk,]
             ## maturity
