@@ -31,8 +31,6 @@ fleets.om <- function(fleets, biols, BDs, covars, advice, biols.ctrl, fleets.ctr
     
     print(fl)
 
-    if(fl == "UKS_Otter_24<40m" & year == 15) { browser()}
-        
         dyn.model <- fleets.ctrl[[fl]]$effort.model
         
         # # For selective fisheries:

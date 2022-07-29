@@ -1422,7 +1422,8 @@ mizerGrowth <- function(biols, SRs, fleets, year, season, stknm, covars, ...) {
       biol@n[,yr,,,,i]      <- Ns
       ## weights, Ms and maturity
       biol@wt[,yr,,,,i]      <- Wts
-      biol@m[,yr,,,,i]       <- Ms
+     ## biol@m[,yr,,,,i]       <- Ms   /// test only, replace once test
+      ## complete
       biol@mat$mat[,yr,,,,i] <- Mat
       
       ## Can't have zeros in numbers so add a small value
