@@ -15,7 +15,18 @@
 #  + min and max effort thresholds by fleet
 #  + info on discrimination capability of the metiers (fleets.ctrl[[fl]]$q2zero[st,mt])
 #-------------------------------------------------------------------------------
-MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl, advice.ctrl, flnm, year = 1, season = 1,...){
+MaxProfit <- function(fleets, 
+                      biols, 
+                      BDs,
+                      covars, 
+                      advice, 
+                      biols.ctrl, 
+                      fleets.ctrl, 
+                      advice.ctrl, 
+                      flnm, 
+                      year = 1, 
+                      season = 1,
+                      ...){
   
   dimnms <- dimnames(biols[[1]]@n)
   
@@ -50,21 +61,36 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
   mtnms <- names(fl@metiers)
   nmt   <- length(mtnms)
   
+  ## prepare total effort object
   Et.res  <-  numeric(it)
   names(Et.res) <- dimnms$iter
-  efs.res <-  matrix(NA,nmt,it,dimnames = list(mtnms, dimnms$iter))
   
+  # prepare matrix for metier effort-share optimisation results
+  efs.res <-  matrix(NA,nmt,it,dimnames = list(mtnms, dimnms$iter))
   
   # Check fleets.ctrl elements.
   # This checks the restriction for all the fleets and we only need to check the fleet we are proyecting.
   #   if(! all(sapply(names(fleets), function(x) fleets.ctrl[[x]]$restriction %in% c('catch', 'landings'))))
   #       stop("fleets.ctrl$restriction must be equal to 'catch' or 'landings'")
   
-  effort.restr <- ifelse(length(fleets.ctrl[[flnm]]$effort.restr) > 1, fleets.ctrl[[flnm]]$effort.restr[yr], fleets.ctrl[[flnm]]$effort.restr)
-  restriction <- ifelse(length(fleets.ctrl[[flnm]]$restriction) > 1,   fleets.ctrl[[flnm]]$restriction[yr], fleets.ctrl[[flnm]]$restriction)
-  if(!(restriction %in% c('catch', 'landings') )) stop("fleets.ctrl$restriction for fleet, ', flnm, ', must be equal to 'catch' or 'landings'")
+  ## extract effort restriction for this fleet - e.g. "min"
+  effort.restr <- ifelse(length(fleets.ctrl[[flnm]]$effort.restr) > 1, 
+                         fleets.ctrl[[flnm]]$effort.restr[yr], 
+                         fleets.ctrl[[flnm]]$effort.restr)
   
-  LO <- ifelse(length(fleets.ctrl[[flnm]]$LandObl)>1, fleets.ctrl[[flnm]]$LandObl[yr], fleets.ctrl[[flnm]]$LandObl) 
+  ## extract advice restriction for this fleet - e.g. "catch"/"landings
+  restriction <- ifelse(length(fleets.ctrl[[flnm]]$restriction) > 1,   
+                        fleets.ctrl[[flnm]]$restriction[yr], 
+                        fleets.ctrl[[flnm]]$restriction)
+  
+  
+  if(!(restriction %in% c('catch', 'landings') )) 
+    stop("fleets.ctrl$restriction for fleet, ', flnm, ', must be equal to 'catch' or 'landings'")
+  
+  ## Extract landing obligation boolean
+  LO <- ifelse(length(fleets.ctrl[[flnm]]$LandObl)>1, 
+               fleets.ctrl[[flnm]]$LandObl[yr], 
+               fleets.ctrl[[flnm]]$LandObl) 
   
   # The effort is restricted only by the stocks in 'stocks.restr'                      
   if(!is.null(fleets.ctrl[[flnm]][['stocks.restr']])) {
@@ -73,8 +99,13 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
     stocks.restr <- fleets.ctrl[[flnm]][['stocks.restr']] <- catchNames(fleets[[flnm]])
   
   # if(is.na(fleets.ctrl[[flnm]][['stocks.restr']]))
-  #   cat(paste("warning: fleets.ctrl[['",flnm,"']][['stocks.restr']]==NA, then effort is restricted by capacity and not by any of the stocks.\n", sep=""))
+  #   cat(paste("warning: fleets.ctrl[['",flnm,"']][['stocks.restr']]==NA, then 
+  #   effort is restricted by capacity and not by any of the stocks.\n", sep=""))
   
+  ## CHECK progress
+  cat("effort.restr: ",effort.restr,"\n")
+  cat("restriction: ", restriction,"\n")
+  cat("stocks.restr: ",stocks.restr,"\n")
   
   for(i in dimnms$iter){
     
@@ -88,13 +119,22 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
     adv.ss <- setNames( rep(NA,nst), stnms)
     for (st in stnms) adv.ss[st] <- ifelse(is.null(advice.ctrl[[st]][["adv.season"]]), ns, advice.ctrl[[st]][["adv.season"]]) # [nst]
     
+    ## Catch bugs when the iteration name does not match the number of iterations available
+    if(as.numeric(i) > dims(biols[[1]]@n)$iter) {
+      stop(paste0("Check biols dimnames vector for iter: ",
+                  "iteration name is larger than available iterations: ",
+                  "i = ",i," ; dims = ", dims(biols[[1]]@n)$iter))
+    }
+    
     # Transform the FLR objects into list of arrays in order to be able to work with non-FLR
     list2env(FLObjs2S3_fleetSTD(biols = biols, fleets = fleets, advice = advice, covars = covars, 
                                 biols.ctrl = biols.ctrl, fleets.ctrl = fleets.ctrl, BDs=BDs, 
                                 flnm = flnm, yr = yr, ss = ss, iters = i, adv.ss = adv.ss), environment())
     
+    ## TEST
+    # cat("INIT efs.m: ", efs.m,"\n")
     
-    # # Correction of efs.m when no TAC for main target species
+    # Correction of efs.m when no TAC for main target species
     if(!is.null(fleets.ctrl[[flnm]]$q2zero)){ 
       fl.sel <- fleets.ctrl[[flnm]]$q2zero
       for (mt in mtnms)
@@ -105,17 +145,35 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
       if(fleets.ctrl[[flnm]]$efs.abs == FALSE) efs.m <- efs.m/sum(efs.m)
     }
     
+    ## TEST
+    # cat("FINAL efs.m: ", efs.m,"\n")
+    
     # Calculate the initial point based on the effort that correspond with the TAC quotas.
     effs <- numeric(length(q.m))
     names(effs) <- names(q.m)
+    
+    # When calculating the numbers at age by stock (Nsts), the stocks by  which effort 
+    # for that fleet is restricted, which should be all of them, is used. However, 
+    # these stocks are not pre-defined so the result is an empty list. BUT - the 
+    # output doesn't appear to be used anywhere in the function, 
+    # so... is it redundant?
+    
     # Numbers at age by stock
     Nsts <- lapply(setNames(sts, sts), function(x) array(N[[x]][,,i,drop=T], dim = c(dim(N[[x]])[1:2],1)))
     
+    # Next, loop over each stock and extract the catch model 
+    # (e.g. CobbDouglassAge.effort) for the stock. Evaluate the function to 
+    # calculate the effort for each stock
+    
+    ## PRINT Fleet advised catches per stock
+    print(Cr.f) # This is stock TAC * fleet quotashare
+    
     for(st in names(q.m)){
       
+      ## define effort function
       effort.fun <- paste(fleets.ctrl[[flnm]][[st]][['catch.model']], 'effort', sep = '.')
-
       
+      ## Run effort model for each stock
       effs[st] <-  eval(call(effort.fun, Cr = Cr.f,  N = N, q.m = q.m, rho = rho, efs.m = efs.m, 
                                 alpha.m = alpha.m, beta.m = beta.m, ret.m = ret.m, wl.m = wl.m, wd.m = wd.m,stknm=st,
                                 restriction = restriction,  QS.groups = fleets.ctrl[[flnm]][['QS.groups']],
@@ -123,38 +181,59 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
       
     }
     
+    ## CHECK progress - print efforts
+    # cat("Initial metier efforts: ", effs, "\n")
+    
+    ## Sum the catchabilities across ages and metiers for each stock
+    ## this is used in the next step to define the limiting effort
     qsum.stk <- sapply(names(q.m), function(x) sum(q.m[[x]]))
     
+    # Define the limiting effort. This is 90% of the minumum effort (from the stock vector)
+    # or 90% of a defined effort-restricted stock
+    # If limiting effort is greater or equal to fleet capacity, decrease capacity by 10%
     Et  <- 0.9*ifelse(effort.restr == 'min', min(effs[qsum.stk>0]), effs[effort.restr])[1] 
     Et <- ifelse(Et < K, Et, K*0.9)
     
-    
+    ## re-define the catch restriction to account for null instances
     catch.restr <- ifelse(is.null(restriction), 'landings', restriction)
     
-    # if(is.null(fleets.ctrl[[flnm]]$opts)) opts <- list("algorithm" = "NLOPT_LN_COBYLA", maxeval = 1e9, xtol_abs = rep(1e-4,nmt), xtol_rel = 1e-4, maxtime = 300)
+    # if(is.null(fleets.ctrl[[flnm]]$opts)) 
+    #   opts <- list("algorithm" = "NLOPT_LN_COBYLA", maxeval = 1e9, 
+    #   xtol_abs = rep(1e-4,nmt), xtol_rel = 1e-4, maxtime = 300)
     # else  opts <- fleets.ctrl[[flnm]]$opts
+    
+    ## If effort range is specified, then extract the vectors of min and max
+    ## effort per metier (absolute or relative). If not specified, then these
+    ## are estimated (if relative then 0 - 1; if absolute then 0 - carrying capacity)
     
     # Effort restrictions (by metier)
     if(!is.null(fleets.ctrl[[flnm]]$effort.range)){
       effort.range <- fleets.ctrl[[flnm]]$effort.range
       efs.max <- as.numeric(effort.range[,"max"])
       efs.min <- as.numeric(effort.range[,"min"])
-    }
-    else{
+    } else{
       if(fleets.ctrl[[flnm]]$efs.abs == FALSE){
         efs.min <- rep(0, length(fleets[[flnm]]@metiers))
         efs.max <- rep(1, length(fleets[[flnm]]@metiers))
         names(efs.min) <- names(efs.max) <- names(fleets[[flnm]]@metiers)
-      }else{
+      } else {
         efs.min <- rep(0, length(fleets[[flnm]]@metiers))
         efs.max <- rep(K, length(fleets[[flnm]]@metiers))
         names(efs.min) <- names(efs.max) <- names(fleets[[flnm]]@metiers)
       }
     }
     
+    ## Taking the limiting effort, we split this by the (last?) effort share to 
+    ## create an initial vector of efforts per metier to be optimised
+    
     #  if(fleets.ctrl[[flnm]]$efs.abs == FALSE){
     # If efs.min == 0 or Cr.f == 0 or E0 == 0 set them equal to 1e-8 to avoid having indeterminations in the penalties
     E0 <- Et*efs.m
+    
+    ## TEST
+    # cat("Et: ", Et,"\n")
+    # cat("v1 efs.m: ", efs.m,"\n")
+    # cat("v1 E0: ", E0,"\n")
     
     efs.min <- ifelse(efs.min == 0, 1e-8, efs.min)
     E0      <- ifelse(E0 == 0, 1e-8, E0)
@@ -163,13 +242,24 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
     # recalculate efs.m in case E0 has changed.
     efs.m <- E0/sum(E0)
     
+    ## In this next section, instances where effort share ranges are exceeded,
+    ## then we adjust the effort share lower limit to the low effort-share...
+    ## or adjust the excessively high effort-share to the max effort-share limit
+    
     # Apply these restrictions to initial values
     if (fleets.ctrl[[flnm]]$efs.abs == FALSE) {
       
       efs.min <- ifelse(efs.m <= efs.min, efs.m*0.99, efs.min)
       efs.m <- ifelse(efs.m >= efs.max, efs.max*0.99, efs.m)
       
+      ## recalculate the starting vector of efforts per metier
       E0 <- Et*efs.m
+      
+      # in case where total effort is zero
+      cat('Et: ', Et,'\n')
+      if (Et == 0) {
+        E0  <- 1e-8*efs.m
+      }
       
     } else {
       
@@ -178,10 +268,8 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
       
     }
     
-    # }
-    #  else{
-    #    E0 <- sum(efs.m
-    #  }
+    # This is what we are trying to maximise, the ratio between effort and 
+    # unutilised capacity 
     
     X <- log(E0/(K - E0))
     
@@ -202,6 +290,7 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
       Nyr_1 = Nyr_1, Myr_1 = Myr_1, M = M, Cfyr_1 = Cfyr_1, 
       flnm = flnm, fleets.ctrl = fleets.ctrl), silent = TRUE)
     
+    ## If convergence not achieved - run a second round of optimisation
     if(class(eff_opt) != "try-error"){
       if(eff_opt[["convergence"]] %in% c(1, 10)){
         eff_opt <- try(optim(eff_opt[["par"]], f_MP_nloptr_penalized, 
@@ -230,16 +319,19 @@ MaxProfit <- function(fleets, biols, BDs,covars, advice, biols.ctrl, fleets.ctrl
     # Et.res[i]   <- sum(eff_nloptr$solution)
     #! if(Et.res[i]>K) Et.res[i] <- K
 
+    ## Retrieve the optimised effort if convergence achieved. Otherwise, use
+    ## the initial values (I think this would be equivalent to the most recent 
+    ## effort share)
     
     if(class(eff_opt) != "try-error"){
       res <- K/(1 + exp(-eff_opt[[1]]))
     }else{
       res <- K/(1 + exp(-X))
     }
+    
+    ## Calculate the total effort and the proportional effort-share
     Et.res[i] <- sum(res)
     efs.res[, i] <- res/sum(res)
-
-    
     
     # # CHECKS
     # cat('CONVERGENCE: ', eff_opt$convergence, '\n')
@@ -585,7 +677,7 @@ f_MP_nloptr_penalized <- function(X, efs.min, efs.max, q.m, alpha.m, beta.m, pr.
     # resTAC[st] <- 1e7*sum(1/(1+2^((-Cr.f[stk.cnst]+sum(Cm))/0.00005))) This penalty works properly only if the multiplier is in the scale of the profits.
     resTAC[stk.cnst] <- log(sum(Cm)/(Cr.f[stk.cnst,]-sum(Cm)))
     
-    pen_OverShoot <- resTAC[stk.cnst]
+    pen_OverShoot <- (resTAC[stk.cnst])
   }
   
   # cat('-----------------------------------------\n')

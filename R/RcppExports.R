@@ -5,3 +5,14 @@ fill_flcatches <- function(fl, cobj, st, mt_idx) {
     .Call(`_FLBEIA_fill_flcatches`, fl, cobj, st, mt_idx)
 }
 
+condition_fleet_effort <- function(fl, dim, sim_yrs, mean_yrs) {
+    .Call('_FLBEIA_condition_fleet_effort', PACKAGE = 'FLBEIA', fl, dim, sim_yrs, mean_yrs)
+}
+
+condition_flcatches <- function(fl, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards) {
+    .Call('_FLBEIA_condition_flcatches', PACKAGE = 'FLBEIA', fl, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards)
+}
+
+inner_project_loop <- function(no_sp, no_w, n, A, B, S, w_min_idx) {
+    .Call('_FLBEIA_inner_project_loop', PACKAGE = 'FLBEIA', no_sp, no_w, n, A, B, S, w_min_idx)
+}

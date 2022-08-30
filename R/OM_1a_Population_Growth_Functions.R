@@ -348,6 +348,4 @@ ASPG_Baranov <- function(biols, SRs, fleets, year, season, stknm, ...){
   
 } 
 
-    
-
 

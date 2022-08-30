@@ -172,6 +172,12 @@ CobbDouglasAge.effort   <- function(Cr,N,wl.m, wd.m, ret.m, q.m,efs.m,alpha.m,be
 
 
     Cinf <- CobbDouglasAge(E = 1e100,Cr=Cr,N=N, wl.m = wl.m, wd.m = wd.m, q.m=q.m,efs.m=efs.m,alpha.m=alpha.m,beta.m=beta.m,  ret.m = ret.m, rho = rho)
+    
+    if(is.na((Cr - sum(Cinf))> 0)) {
+      
+      print(Cinf)
+      stop(paste("You have an NA in catches", stknm))}
+    
     if((Cr - sum(Cinf))> 0) # Even with infinity effort it is not possible to catch the quota => return 'almost' infinity effort.
         return(effort = 1e100)
 

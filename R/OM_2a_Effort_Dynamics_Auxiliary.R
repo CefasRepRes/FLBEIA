@@ -132,7 +132,8 @@ FLObjs2S3_fleetSTD <- function(biols, fleets, BDs, advice, covars, biols.ctrl, f
     # if rho is a numeric => there is only one stock and one iteration wihout names => name it
     # [nst,it]
     #------------------------------------------------------------------------------------------
-    TAC.yr  <- matrix(advice$TAC[stnms,yr,drop=T], nst, nit, dimnames = list(stnms, iters))   # [nst,it]
+    TAC.yr  <- matrix(advice$TAC[stnms,yr,,,,iters,drop=T], nst, nit, dimnames = list(stnms, iters))   # [nst,it]
+    
     # when advice season is different to ns: adapt to the advice calendar 
     for (st in stnms)
       if (adv.ss[st] < ns & ss <= adv.ss[st]) TAC.yr[st,] <- advice$TAC[st,yr-1,drop=T] # previous year TAC
@@ -147,7 +148,7 @@ FLObjs2S3_fleetSTD <- function(biols, fleets, BDs, advice, covars, biols.ctrl, f
     }
     rho       <- fleets.ctrl$catch.threshold[,yr,,ss,,iters,  drop=T]  # [ns,it]
     if(is.null(dim(rho)))  rho <- matrix(rho, length(stnms), nit, dimnames = list(stnms, iters))
-  
+    
     if(effort.model == 'MaxProfit')
       QS.ss    <- matrix(colSums(QS), dim(QS)[2], nit, dimnames = list(colnames(QS), iters))  # [nst,it] 
     else 

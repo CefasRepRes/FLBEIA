@@ -263,7 +263,7 @@ FLBEIA <- function(biols, SRs = NULL, BDs = NULL, fleets, covars = NULL, indices
     # Check that all FLQuants have the rigth [ny,ns,it] dimensions. 
     chckdim0 <- checkDims(biols,  minyear, maxyear, ns, it)
     chckdim1 <- checkDims(fleets, minyear, maxyear, ns, it)
-    if(!is.null(covars)) chckdim2 <- checkDims(covars, minyear, maxyear, ns, it)
+  ##  if(!is.null(covars)) chckdim2 <- checkDims(covars, minyear, maxyear, ns, it) ## PJD: removing this check to pass mizer as covar
    
     # Extract years, check and convert into positions.
     sim.years <- as.numeric(main.ctrl$sim.years)

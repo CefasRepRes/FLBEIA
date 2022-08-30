@@ -11,7 +11,6 @@ Description: A simulation toolbox that describes a fishery system under
   two blocks is divided in 3 components: the biological, the fleets and the
   covariables on the one hand, and the observation, the assessment and
   the advice on the other.
-LinkingTo: Rcpp
 Depends:
   methods,
   R(>= 3.5.0),
@@ -19,24 +18,25 @@ Depends:
   FLCore (>= 2.6.5),
   FLFleet
 Imports:
-  stats,
-  utils,
-  FLXSA,
-  FLa4a,
-  Matrix,
-  FLash,
-  mvtnorm,
-  mlogit,
-  nloptr,
-  triangle,
-  arrayhelpers,
-  dplyr,
-  plyr,
-  purrr,
-  tidyr,
-  tidyverse,
-  tibble,
-  Rcpp
+    stats,
+    utils,
+    FLXSA,
+    FLa4a,
+    Matrix,
+    FLash,
+    mvtnorm,
+    mlogit,
+    nloptr,
+    triangle,
+    arrayhelpers,
+    dplyr,
+    plyr,
+    purrr,
+    tidyr,
+    tidyverse,
+    tibble,
+    mizer,
+    Rcpp
 Suggests: R.rsp, spict, XLConnect
 Additional_repositories: http://flr-project.org/R
 License: GPL (>= 2)
@@ -87,11 +87,13 @@ Collate:
     "Conditioning_InitialPop.R"
     "data.R"
     "ecoSum_DAMARA_function.R"
+    "FLBEIA-package.R"
     "Functions_Checks.R"
     "Functions_FLFleet.R"
     "Functions_FLFleets.R"
     "MAIN_Function.R"
     "Method_propagate_FLFleet.R"
+    "mizer_functions.R"
     "MP_1_Observation.R"
     "MP_1a_Observation_Model.R"
     "MP_1b_Observation_Model_Functions.R"
@@ -107,6 +109,7 @@ Collate:
     "MP_3c_HCR_F2CatchHCR.R"
     "MP_3c_HCR_Froese.R"
     "MP_3c_HCR_ICES_MSY.R"
+    "MP_3c_HCR_ICES_MSYmizer.R"
     "MP_3c_HCR_neaMAC_ltmp.R"
     "MP_3c_HCRE_ane.R"
     "MP_3d_HCR_AnnexIV.R"
@@ -142,6 +145,7 @@ Collate:
     "plotFLBiols.R"
     "PlotFLFleets.R"
     "PlotfltStkSum.R"
+    "RcppExports.R"
     "Results_JoinIterations.R"
     "Results_Summary.R"
     "Results_SummaryPlots.R"
@@ -149,3 +153,5 @@ Collate:
     "RcppExports.R"
 VignetteBuilder: R.rsp
 RoxygenNote: 7.1.2
+LinkingTo: 
+    Rcpp

@@ -25,8 +25,64 @@ BEGIN_RCPP
 END_RCPP
 }
 
+// condition_fleet_effort
+List condition_fleet_effort(List fl, IntegerVector dim, IntegerVector sim_yrs, IntegerVector mean_yrs);
+RcppExport SEXP _FLBEIA_condition_fleet_effort(SEXP flSEXP, SEXP dimSEXP, SEXP sim_yrsSEXP, SEXP mean_yrsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type fl(flSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type dim(dimSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type sim_yrs(sim_yrsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type mean_yrs(mean_yrsSEXP);
+    rcpp_result_gen = Rcpp::wrap(condition_fleet_effort(fl, dim, sim_yrs, mean_yrs));
+    return rcpp_result_gen;
+END_RCPP
+}
+
+// condition_flcatches
+List condition_flcatches(List fl, NumericVector B, CharacterVector st, IntegerVector mean_yrs_q, IntegerVector mean_yrs_wts, IntegerVector mean_yrs_sel, IntegerVector sim_yrs, bool LO, bool UseCWt4Discards);
+RcppExport SEXP _FLBEIA_condition_flcatches(SEXP flSEXP, SEXP BSEXP, SEXP stSEXP, SEXP mean_yrs_qSEXP, SEXP mean_yrs_wtsSEXP, SEXP mean_yrs_selSEXP, SEXP sim_yrsSEXP, SEXP LOSEXP, SEXP UseCWt4DiscardsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< List >::type fl(flSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type B(BSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type st(stSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type mean_yrs_q(mean_yrs_qSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type mean_yrs_wts(mean_yrs_wtsSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type mean_yrs_sel(mean_yrs_selSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type sim_yrs(sim_yrsSEXP);
+    Rcpp::traits::input_parameter< bool >::type LO(LOSEXP);
+    Rcpp::traits::input_parameter< bool >::type UseCWt4Discards(UseCWt4DiscardsSEXP);
+    rcpp_result_gen = Rcpp::wrap(condition_flcatches(fl, B, st, mean_yrs_q, mean_yrs_wts, mean_yrs_sel, sim_yrs, LO, UseCWt4Discards));
+    return rcpp_result_gen;
+END_RCPP
+}
+
+// inner_project_loop
+NumericMatrix inner_project_loop(int no_sp, int no_w, NumericMatrix n, NumericMatrix A, NumericMatrix B, NumericMatrix S, NumericVector w_min_idx);
+RcppExport SEXP _FLBEIA_inner_project_loop(SEXP no_spSEXP, SEXP no_wSEXP, SEXP nSEXP, SEXP ASEXP, SEXP BSEXP, SEXP SSEXP, SEXP w_min_idxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type no_sp(no_spSEXP);
+    Rcpp::traits::input_parameter< int >::type no_w(no_wSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type n(nSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type A(ASEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type B(BSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type S(SSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w_min_idx(w_min_idxSEXP);
+    rcpp_result_gen = Rcpp::wrap(inner_project_loop(no_sp, no_w, n, A, B, S, w_min_idx));
+    return rcpp_result_gen;
+END_RCPP
+}
+
 static const R_CallMethodDef CallEntries[] = {
+    {"_FLBEIA_condition_fleet_effort", (DL_FUNC) &_FLBEIA_condition_fleet_effort, 4},
     {"_FLBEIA_fill_flcatches", (DL_FUNC) &_FLBEIA_fill_flcatches, 4},
+    {"_FLBEIA_condition_flcatches", (DL_FUNC) &_FLBEIA_condition_flcatches, 9},
+    {"_FLBEIA_inner_project_loop", (DL_FUNC) &_FLBEIA_inner_project_loop, 7},
     {NULL, NULL, 0}
 };
 

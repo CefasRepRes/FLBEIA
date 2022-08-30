@@ -25,8 +25,7 @@ importFrom("nloptr", "nloptr")
 #importFrom("nnet", "predict.multinom")
 importFrom("purrr", "map", "partial", "set_names")
 importFrom("tibble", "tibble")
-importFrom("Rcpp", "sourceCpp")
-
+importFrom("Rcpp", "sourceCpp", "evalCpp")
 useDynLib(FLBEIA, .registration = TRUE)
 
 export(
@@ -93,7 +92,9 @@ export(
   "FroeseHCR",
   "ghlHCR",
 # "initPop_lifeHist",
+"inner_project_loop",
   "IcesHCR",
+  "IcesHCRmizer",
   "joinIter",
   "L_flbeia",
   "landStock",
@@ -174,4 +175,3 @@ exportClasses(
   "FLMetierExt",
   "FLMetiersExt"
 )
-
