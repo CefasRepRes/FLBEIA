@@ -1422,7 +1422,8 @@ mizerGrowth <- function(biols, SRs, fleets, year, season, stknm, covars, ...) {
       biol@n[,yr,,,,i]      <- Ns
       ## weights, Ms and maturity
       biol@wt[,yr,,,,i]      <- Wts
-      biol@m[,yr,,,,i]       <- Ms   
+     ## biol@m[,yr,,,,i]       <- Ms   ## removing these, as we don't want M in
+      ## the catch production function
       biol@mat$mat[,yr,,,,i] <- Mat
       
       ## Can't have zeros in numbers so add a small value
