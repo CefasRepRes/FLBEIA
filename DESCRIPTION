@@ -149,7 +149,6 @@ Collate:
     "Results_Summary.R"
     "Results_SummaryPlots.R"
     "brps_seasonal.R"
-    "RcppExports.R"
 VignetteBuilder: R.rsp
 RoxygenNote: 7.1.2
 LinkingTo: 
