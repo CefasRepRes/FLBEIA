@@ -90,7 +90,6 @@ Collate:
     "FLBEIA-package.R"
     "Functions_Checks.R"
     "Functions_FLFleet.R"
-    "Functions_FLFleets.R"
     "MAIN_Function.R"
     "Method_propagate_FLFleet.R"
     "mizer_functions.R"
