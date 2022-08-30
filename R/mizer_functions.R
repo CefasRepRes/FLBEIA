@@ -988,11 +988,11 @@ run_to_2019 <- function(theta,inter, dyn_kappa,NS_species,selectivity,catchabili
 #  return(list(num_at_age=end_of_year[-1,,],Ms=break_mort$Ms[-1,,],Fs=break_mort$Fs[-1,,],cat_bio_at_age=an_cat_bio_aa[-1,,],cat_num_at_age=an_cat_num_aa[-1,,],mean_waa=an_cat_bio_aa[-1,,]/an_cat_num_aa[-1,,],prop_mat=end_of_year_m[-1,,]/end_of_year[-1,,]))
 #}
 
-get_transfer <- function(mod, prop_yr_n = 0.5, prop_yr_m = 0){
+get_transfer <- function(mod, prop_yr = 0.5){
   num_at_age <- get_numbers_at_age(mod)
-  end_of_year <- num_at_age[round(as.numeric(dimnames(num_at_age)[[1]]))+prop_yr_n ==(as.numeric(dimnames(num_at_age)[[1]])),,] ## numbers at age at end of year
+  end_of_year <- num_at_age[floor(as.numeric(dimnames(num_at_age)[[1]]))+prop_yr ==(as.numeric(dimnames(num_at_age)[[1]])),,] ## numbers at age at end of year
   num_at_age_m <- get_numbers_at_age(mod,mature=T)
-  end_of_year_m <- num_at_age_m[round(as.numeric(dimnames(num_at_age_m)[[1]]))+prop_yr_m==(as.numeric(dimnames(num_at_age_m)[[1]])),,]
+  end_of_year_m <- num_at_age_m[floor(as.numeric(dimnames(num_at_age_m)[[1]]))+prop_yr==(as.numeric(dimnames(num_at_age_m)[[1]])),,]
   mort_by_age <- getMortbyAge(mod)
   break_mort <- lapply(mort_by_age,getAnnualRate)
   cat_num_aa <- get_catch_at_age(mod,t_save=0.1) ## in numbers
@@ -1002,7 +1002,7 @@ get_transfer <- function(mod, prop_yr_n = 0.5, prop_yr_m = 0){
   
   
   weight_at_age <- get_weight_at_age(mod)
-  weight_end_of_year <- weight_at_age[round(as.numeric(dimnames(num_at_age)[[1]]))==(as.numeric(dimnames(num_at_age)[[1]])),,]
+  weight_end_of_year <- weight_at_age[floor(as.numeric(dimnames(num_at_age)[[1]]))==(as.numeric(dimnames(num_at_age)[[1]])),,]
   
   
   return(list(num_at_age=end_of_year[-1,,],Ms=break_mort$Ms[-1,,],Fs=break_mort$Fs[-1,,],cat_bio_at_age=an_cat_bio_aa[-1,,],cat_num_at_age=an_cat_num_aa[-1,,],mean_cwaa=an_cat_bio_aa[-1,,]/an_cat_num_aa[-1,,],prop_mat=end_of_year_m[-1,,]/end_of_year[-1,,],mean_swaa = weight_end_of_year[-1,,]/end_of_year[-1,,]))
@@ -1027,14 +1027,14 @@ append_mods<- function(mod_run,test,dt=0.1){
 ##
 ##########
 
-get_initial <- function(kappa_dyn,inter,num,theta,thetas,num_thetas=num,NS_species,Fs,selectivity,catchability,lambda=2.05,spin_up=50,max_age=20, prop_yr_n = 0.5, prop_yr_m = 0){
+get_initial <- function(kappa_dyn,inter,num,theta,thetas,num_thetas=num,NS_species,Fs,selectivity,catchability,lambda=2.05,spin_up=50,max_age=20, prop_yr = 0.5){
   if(missing(theta)){
     theta <-as.numeric(thetas[num_thetas,1:40])
   }
   kappa_dyn <- kappa_dyn[num,]
   testing_m <- run_to_2019(theta,inter=inter, dyn_kappa=kappa_dyn,NS_species=NS_species,selectivity=selectivity,catchability=catchability,lambda=lambda,Fs=Fs,spin_up = spin_up,max_age=max_age)
   mod_run <- list(n=testing_m$mod$sim@n[paste(seq(1984,2020,0.1)),,],n_pp=testing_m$mod$sim@n_pp[paste(seq(1984,2020,0.1)),])
-  theBoy<-get_transfer(testing_m$mod, prop_yr_n = prop_yr_n, prop_yr_m = prop_yr_m)
+  theBoy<-get_transfer(testing_m$mod, prop_yr = prop_yr)
   mod_run <- list(n=testing_m$mod$sim@n[paste(seq(1984,2020,0.1)),,],n_pp=testing_m$mod$sim@n_pp[paste(seq(1984,2020,0.1)),])
   ## edit the selection and catchability 
   params <- testing_m$params
@@ -1059,7 +1059,7 @@ get_initial <- function(kappa_dyn,inter,num,theta,thetas,num_thetas=num,NS_speci
 ##
 #######
 
-progress_one_year <- function(effort,year,mod_run,waa,kappa_dyn,inter,params,theta,prev_run,lin=F,def.sel,append=T, prop_yr_n = 0.5, prop_yr_m = 0){
+progress_one_year <- function(effort,year,mod_run,waa,kappa_dyn,inter,params,theta,prev_run,lin=F,def.sel,append=T, prop_yr = 0.5){
   if(!missing(prev_run)){
     return(progress_one_year(effort=effort,year=year,
                              mod_run=prev_run$mod_run,waa=tail(prev_run$mod$waa,n=1)[1,,],kappa_dyn=prev_run$kappa_dyn,inter=prev_run$inter,params=prev_run$params,theta=prev_run$theta,lin=lin,def.sel=prev_run$def.sel,append=append
@@ -1067,7 +1067,7 @@ progress_one_year <- function(effort,year,mod_run,waa,kappa_dyn,inter,params,the
   }
   #browser()
   test <- project_dyn_waa_ad_one_year(params,effort=effort,kappa_dyn=kappa_dyn[year],inter_mat = inter[,,year],t_save=0.1,waa_initial=waa,dt=0.1,initial_n=tail(mod_run$n,n=1)[1,,],initial_n_pp=tail(mod_run$n_pp,n=1)[1,],theta=theta,lin=lin,def.sel = def.sel)
-  theBoy<-get_transfer(test, prop_yr_n = prop_yr_n, prop_yr_m = prop_yr_m)
+  theBoy<-get_transfer(test, prop_yr = prop_yr)
   if(append==T){
     mod_run <- append_mods(mod_run,test)
   }
