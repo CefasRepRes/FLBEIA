@@ -1002,7 +1002,7 @@ get_transfer <- function(mod, prop_yr = 0.5){
   
   
   weight_at_age <- get_weight_at_age(mod)
-  weight_end_of_year <- weight_at_age[floor(as.numeric(dimnames(num_at_age)[[1]]))==(as.numeric(dimnames(num_at_age)[[1]])),,]
+  weight_end_of_year <- weight_at_age[floor(as.numeric(dimnames(num_at_age)[[1]]))+prop_yr==(as.numeric(dimnames(num_at_age)[[1]])),,]
   
   
   return(list(num_at_age=end_of_year[-1,,],Ms=break_mort$Ms[-1,,],Fs=break_mort$Fs[-1,,],cat_bio_at_age=an_cat_bio_aa[-1,,],cat_num_at_age=an_cat_num_aa[-1,,],mean_cwaa=an_cat_bio_aa[-1,,]/an_cat_num_aa[-1,,],prop_mat=end_of_year_m[-1,,]/end_of_year[-1,,],mean_swaa = weight_end_of_year[-1,,]/end_of_year[-1,,]))
