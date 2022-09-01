@@ -1009,7 +1009,7 @@ get_transfer <- function(mod, prop_yr = 0.5){
   if(prop_yr==0) {  
   return(list(num_at_age=end_of_year[-1,,],Ms=break_mort$Ms[-1,,],Fs=break_mort$Fs[-1,,],cat_bio_at_age=an_cat_bio_aa[-1,,],cat_num_at_age=an_cat_num_aa[-1,,],mean_cwaa=an_cat_bio_aa[-1,,]/an_cat_num_aa[-1,,],prop_mat=end_of_year_m[-1,,]/end_of_year[-1,,],mean_swaa = weight_end_of_year[-1,,]/end_of_year[-1,,]))}
 
-  return(list(num_at_age=end_of_year,Ms=break_mort$Ms,Fs=break_mort$Fs,cat_bio_at_age=an_cat_bio_aa,cat_num_at_age=an_cat_num_aa,mean_cwaa=an_cat_bio_aa/an_cat_num_aa,prop_mat=end_of_year_m/end_of_year,mean_swaa = weight_end_of_year/end_of_year))
+  return(list(num_at_age=end_of_year,Ms=break_mort$Ms[-1,,],Fs=break_mort$Fs[-1,,],cat_bio_at_age=an_cat_bio_aa[-1,,],cat_num_at_age=an_cat_num_aa[-1,,],mean_cwaa=an_cat_bio_aa[-1,,]/an_cat_num_aa[-1,,],prop_mat=end_of_year_m/end_of_year,mean_swaa = weight_end_of_year/end_of_year))
 }
 
 
