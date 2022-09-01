@@ -10,6 +10,21 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// fill_flcatches
+S4 fill_flcatches(S4 fl, S4 cobj, CharacterVector st, int mt_idx);
+RcppExport SEXP _FLBEIA_fill_flcatches(SEXP flSEXP, SEXP cobjSEXP, SEXP stSEXP, SEXP mt_idxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< S4 >::type fl(flSEXP);
+    Rcpp::traits::input_parameter< S4 >::type cobj(cobjSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type st(stSEXP);
+    Rcpp::traits::input_parameter< int >::type mt_idx(mt_idxSEXP);
+    rcpp_result_gen = Rcpp::wrap(fill_flcatches(fl, cobj, st, mt_idx));
+    return rcpp_result_gen;
+END_RCPP
+}
+
 // condition_fleet_effort
 List condition_fleet_effort(List fl, IntegerVector dim, IntegerVector sim_yrs, IntegerVector mean_yrs);
 RcppExport SEXP _FLBEIA_condition_fleet_effort(SEXP flSEXP, SEXP dimSEXP, SEXP sim_yrsSEXP, SEXP mean_yrsSEXP) {
@@ -24,6 +39,7 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
 // condition_flcatches
 List condition_flcatches(List fl, NumericVector B, CharacterVector st, IntegerVector mean_yrs_q, IntegerVector mean_yrs_wts, IntegerVector mean_yrs_sel, IntegerVector sim_yrs, bool LO, bool UseCWt4Discards);
 RcppExport SEXP _FLBEIA_condition_flcatches(SEXP flSEXP, SEXP BSEXP, SEXP stSEXP, SEXP mean_yrs_qSEXP, SEXP mean_yrs_wtsSEXP, SEXP mean_yrs_selSEXP, SEXP sim_yrsSEXP, SEXP LOSEXP, SEXP UseCWt4DiscardsSEXP) {
@@ -43,6 +59,7 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+
 // inner_project_loop
 NumericMatrix inner_project_loop(int no_sp, int no_w, NumericMatrix n, NumericMatrix A, NumericMatrix B, NumericMatrix S, NumericVector w_min_idx);
 RcppExport SEXP _FLBEIA_inner_project_loop(SEXP no_spSEXP, SEXP no_wSEXP, SEXP nSEXP, SEXP ASEXP, SEXP BSEXP, SEXP SSEXP, SEXP w_min_idxSEXP) {
@@ -63,6 +80,7 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_FLBEIA_condition_fleet_effort", (DL_FUNC) &_FLBEIA_condition_fleet_effort, 4},
+    {"_FLBEIA_fill_flcatches", (DL_FUNC) &_FLBEIA_fill_flcatches, 4},
     {"_FLBEIA_condition_flcatches", (DL_FUNC) &_FLBEIA_condition_flcatches, 9},
     {"_FLBEIA_inner_project_loop", (DL_FUNC) &_FLBEIA_inner_project_loop, 7},
     {NULL, NULL, 0}
